@@ -7,17 +7,19 @@ function! linediff#BlankBufferData()
         \
         \ 'is_blank': 1,
         \
-        \ 'Init':    function('linediff#Init'),
-        \ 'IsBlank': function('linediff#IsBlank'),
-        \ 'Reset':   function('linediff#Reset')
+        \ 'Init':            function('linediff#Init'),
+        \ 'IsBlank':         function('linediff#IsBlank'),
+        \ 'Reset':           function('linediff#Reset'),
+        \ 'Lines':           function('linediff#Lines'),
+        \ 'SetupDiffBuffer': function('linediff#SetupDiffBuffer'),
         \ }
 endfunction
 
-function! linediff#Init(data) dict
-  let self.bufno    = a:data.bufno
-  let self.filetype = a:data.filetype
-  let self.from     = a:data.from
-  let self.to       = a:data.to
+function! linediff#Init(from, to) dict
+  let self.bufno    = bufnr('%')
+  let self.filetype = &filetype
+  let self.from     = a:from
+  let self.to       = a:to
 
   let self.is_blank = 0
 endfunction
@@ -33,4 +35,17 @@ function! linediff#Reset() dict
   let self.to       = -1
 
   let self.is_blank = 1
+endfunction
+
+function! linediff#Lines() dict
+  return getbufline(self.bufno, self.from, self.to)
+endfunction
+
+function! linediff#SetupDiffBuffer() dict
+  let statusline = printf('[%s:%d-%d]', bufname(self.bufno), self.from, self.to)
+  if &statusline =~ '%f'
+    let statusline = substitute(&statusline, '%f', statusline, '')
+  endif
+  exe "setlocal statusline=" . escape(statusline, ' ')
+  exe "set filetype=" . self.filetype
 endfunction
