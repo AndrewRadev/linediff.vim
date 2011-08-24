@@ -1,7 +1,7 @@
-" Constructs a buffer data object that is still unbound. To initialize the
-" object with data, `Init(from, to)` needs to be invoked on that object.
-function! linediff#BlankBufferData()
-  return {
+" Constructs a Differ object that is still unbound. To initialize the object
+" with data, `Init(from, to)` needs to be invoked on that object.
+function! linediff#BlankDiffer()
+  let differ = {
         \ 'bufno':    -1,
         \ 'filetype': '',
         \ 'from':     -1,
@@ -15,10 +15,12 @@ function! linediff#BlankBufferData()
         \ 'Lines':           function('linediff#Lines'),
         \ 'SetupDiffBuffer': function('linediff#SetupDiffBuffer'),
         \ }
+
+  return differ
 endfunction
 
-" Sets up the buffer data object with data from the argument list and from the
-" current file.
+" Sets up the Differ with data from the argument list and from the current
+" file.
 function! linediff#Init(from, to) dict
   let self.bufno    = bufnr('%')
   let self.filetype = &filetype
@@ -28,14 +30,13 @@ function! linediff#Init(from, to) dict
   let self.is_blank = 0
 endfunction
 
-" Returns true if the buffer data object is blank, which means not initialized
-" with data.
+" Returns true if the differ is blank, which means not initialized with data.
 function! linediff#IsBlank() dict
   return self.is_blank
 endfunction
 
-" Resets the buffer data object to the blank state. Invoke `Init(from, to)` on
-" it later to make it usable again.
+" Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
+" make it usable again.
 function! linediff#Reset() dict
   let self.bufno    = -1
   let self.filetype = ''
@@ -45,8 +46,8 @@ function! linediff#Reset() dict
   let self.is_blank = 1
 endfunction
 
-" Extracts the relevant lines from the original buffer for this particular
-" diff and returns them as a list.
+" Extracts the relevant lines from the original buffer and returns them as a
+" list.
 function! linediff#Lines() dict
   return getbufline(self.bufno, self.from, self.to)
 endfunction
