@@ -1,13 +1,14 @@
 " Constructs a Differ object that is still unbound. To initialize the object
 " with data, `Init(from, to)` needs to be invoked on that object.
-function! linediff#BlankDiffer()
+function! linediff#BlankDiffer(sign_name, sign_text)
   let differ = {
-        \ 'bufno':    -1,
-        \ 'filetype': '',
-        \ 'from':     -1,
-        \ 'to':       -1,
-        \
-        \ 'is_blank': 1,
+        \ 'bufno':     -1,
+        \ 'filetype':  '',
+        \ 'from':      -1,
+        \ 'to':        -1,
+        \ 'sign_name': a:sign_name,
+        \ 'sign_text': a:sign_text,
+        \ 'is_blank':  1,
         \
         \ 'Init':            function('linediff#Init'),
         \ 'IsBlank':         function('linediff#IsBlank'),
@@ -15,6 +16,8 @@ function! linediff#BlankDiffer()
         \ 'Lines':           function('linediff#Lines'),
         \ 'SetupDiffBuffer': function('linediff#SetupDiffBuffer'),
         \ }
+
+  exe "sign define ".a:sign_name." text=".a:sign_text." texthl=Search"
 
   return differ
 endfunction
@@ -26,6 +29,9 @@ function! linediff#Init(from, to) dict
   let self.filetype = &filetype
   let self.from     = a:from
   let self.to       = a:to
+
+  exe "sign place 1 name=".self.sign_name." line=".self.from." file=".expand('%')
+  exe "sign place 1 name=".self.sign_name." line=".self.to." file=".expand('%')
 
   let self.is_blank = 0
 endfunction
