@@ -1,14 +1,15 @@
 " Constructs a Differ object that is still unbound. To initialize the object
 " with data, `Init(from, to)` needs to be invoked on that object.
-function! linediff#BlankDiffer(sign_name, sign_text)
+function! linediff#BlankDiffer(sign_name, sign_number)
   let differ = {
-        \ 'bufno':     -1,
-        \ 'filetype':  '',
-        \ 'from':      -1,
-        \ 'to':        -1,
-        \ 'sign_name': a:sign_name,
-        \ 'sign_text': a:sign_text,
-        \ 'is_blank':  1,
+        \ 'bufno':       -1,
+        \ 'filetype':    '',
+        \ 'from':        -1,
+        \ 'to':          -1,
+        \ 'sign_name':   a:sign_name,
+        \ 'sign_number': a:sign_number,
+        \ 'sign_text':   a:sign_number.'-',
+        \ 'is_blank':    1,
         \
         \ 'Init':            function('linediff#Init'),
         \ 'IsBlank':         function('linediff#IsBlank'),
@@ -17,7 +18,7 @@ function! linediff#BlankDiffer(sign_name, sign_text)
         \ 'SetupDiffBuffer': function('linediff#SetupDiffBuffer'),
         \ }
 
-  exe "sign define ".a:sign_name." text=".a:sign_text." texthl=Search"
+  exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
 
   return differ
 endfunction
@@ -30,8 +31,8 @@ function! linediff#Init(from, to) dict
   let self.from     = a:from
   let self.to       = a:to
 
-  exe "sign place 1 name=".self.sign_name." line=".self.from." file=".expand('%')
-  exe "sign place 1 name=".self.sign_name." line=".self.to." file=".expand('%')
+  exe "sign place ".self.sign_number."1 name=".self.sign_name." line=".self.from." file=".expand('%')
+  exe "sign place ".self.sign_number."2 name=".self.sign_name." line=".self.to." file=".expand('%')
 
   let self.is_blank = 0
 endfunction
@@ -48,6 +49,9 @@ function! linediff#Reset() dict
   let self.filetype = ''
   let self.from     = -1
   let self.to       = -1
+
+  exe "sign unplace ".self.sign_number."1"
+  exe "sign unplace ".self.sign_number."2"
 
   let self.is_blank = 1
 endfunction
