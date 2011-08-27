@@ -6,7 +6,7 @@ CONTENTS                                      *linediff* *linediff-contents*
 
 
 ==============================================================================
-INSTALLATION                                          *splitjoin-installation*
+INSTALLATION                                           *linediff-installation*
 
 There are several ways to install the plugin. The recommended one is by using
 Tim Pope's pathogen (http://www.vim.org/scripts/script.php?script_id=2332). In
@@ -25,4 +25,4 @@ Another way is to simply copy all the essential directories inside the ~.vim/
 directory: plugin, autoload, doc.
 
 ==============================================================================
-USAGE                                                        *splitjoin-usage*
+USAGE                                                         *linediff-usage*
