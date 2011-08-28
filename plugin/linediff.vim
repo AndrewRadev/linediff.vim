@@ -28,7 +28,7 @@ function! s:Linediff(from, to)
   endif
 endfunction
 
-command! LinediffReset :call s:LinediffReset()
+command! LinediffReset call s:LinediffReset()
 function! s:LinediffReset()
   call s:first_differ.Reset()
   call s:second_differ.Reset()

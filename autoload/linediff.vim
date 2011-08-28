@@ -11,11 +11,12 @@ function! linediff#BlankDiffer(sign_name, sign_number)
         \ 'sign_text':   a:sign_number.'-',
         \ 'is_blank':    1,
         \
-        \ 'Init':            function('linediff#Init'),
-        \ 'IsBlank':         function('linediff#IsBlank'),
-        \ 'Reset':           function('linediff#Reset'),
-        \ 'Lines':           function('linediff#Lines'),
-        \ 'SetupDiffBuffer': function('linediff#SetupDiffBuffer'),
+        \ 'Init':                 function('linediff#Init'),
+        \ 'IsBlank':              function('linediff#IsBlank'),
+        \ 'Reset':                function('linediff#Reset'),
+        \ 'Lines':                function('linediff#Lines'),
+        \ 'SetupDiffBuffer':      function('linediff#SetupDiffBuffer'),
+        \ 'UpdateOriginalBuffer': function('linediff#UpdateOriginalBuffer'),
         \ }
 
   exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
@@ -74,4 +75,29 @@ function! linediff#SetupDiffBuffer() dict
   endif
   exe "setlocal statusline=" . escape(statusline, ' ')
   exe "set filetype=" . self.filetype
+
+  let b:differ = self
+
+  autocmd BufWrite <buffer> call b:differ.UpdateOriginalBuffer()
+endfunction
+
+" Updates the original buffer after saving the temporary one.
+"
+" TODO Currently, this only takes care of simple changes, doesn't consider
+" changes in the number of lines at all, and empties the diff buffer for some
+" reason.
+function! linediff#UpdateOriginalBuffer() dict
+  let lines           = getbufline('%', 0, '$')
+  let diff_buffer     = bufnr('%')
+  let original_buffer = self.bufno
+
+  exe original_buffer."buffer"
+  let pos = getpos('.')
+  call cursor(self.from, 1)
+  exe "normal! ".(self.to - self.from + 1)."dd"
+  call append(self.from - 1, lines)
+  call setpos('.', pos)
+
+  exe diff_buffer."buffer"
+  call self.SetupDiffBuffer()
 endfunction
