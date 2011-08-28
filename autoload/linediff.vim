@@ -31,8 +31,8 @@ function! linediff#Init(from, to) dict
   let self.from     = a:from
   let self.to       = a:to
 
-  exe "sign place ".self.sign_number."1 name=".self.sign_name." line=".self.from." file=".expand('%')
-  exe "sign place ".self.sign_number."2 name=".self.sign_name." line=".self.to." file=".expand('%')
+  exe printf("sign place %d1 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.from, self.bufno)
+  exe printf("sign place %d2 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.to,   self.bufno)
 
   let self.is_blank = 0
 endfunction
