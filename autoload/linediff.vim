@@ -101,24 +101,30 @@ function! linediff#SetupDiffBuffer() dict
   autocmd BufWrite <buffer> call b:differ.UpdateOriginalBuffer()
 endfunction
 
-" Updates the original buffer after saving the temporary one.
+" Updates the original buffer after saving the temporary one. Returns the
+" difference in line counts before and after the update. That's a signed
+" number, negative if the lines were reduced.
 "
-" TODO Currently, this only takes care of simple changes, doesn't consider
-" changes in the number of lines at all.
+" TODO This number should be used to modify the other differ in order to
+" maintain correct line numbers.
 function! linediff#UpdateOriginalBuffer() dict
   let new_lines = getbufline('%', 0, '$')
 
   call self.SwitchBuffer(self.original_buffer)
-
   let pos = getpos('.')
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
   call append(self.from - 1, new_lines)
   call setpos('.', pos)
-
   call self.SwitchBuffer(self.diff_buffer)
 
+  let line_count     = self.to - self.from + 1
+  let new_line_count = len(new_lines)
+
+  let self.to = self.from + len(new_lines) - 1
   call self.SetupDiffBuffer()
+
+  return new_line_count - line_count
 endfunction
 
 function! linediff#SwitchBuffer(bufno)
