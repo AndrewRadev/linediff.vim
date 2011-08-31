@@ -19,6 +19,7 @@ function! linediff#BlankDiffer(sign_name, sign_number)
         \ 'CreateDiffBuffer':     function('linediff#CreateDiffBuffer'),
         \ 'SetupDiffBuffer':      function('linediff#SetupDiffBuffer'),
         \ 'UpdateOriginalBuffer': function('linediff#UpdateOriginalBuffer'),
+        \ 'SwitchBuffer':         function('linediff#SwitchBuffer'),
         \ }
 
   exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
@@ -107,7 +108,7 @@ endfunction
 function! linediff#UpdateOriginalBuffer() dict
   let new_lines = getbufline('%', 0, '$')
 
-  exe self.original_buffer."buffer"
+  call self.SwitchBuffer(self.original_buffer)
 
   let pos = getpos('.')
   call cursor(self.from, 1)
@@ -115,7 +116,11 @@ function! linediff#UpdateOriginalBuffer() dict
   call append(self.from - 1, new_lines)
   call setpos('.', pos)
 
-  exe self.diff_buffer."buffer"
+  call self.SwitchBuffer(self.diff_buffer)
 
   call self.SetupDiffBuffer()
+endfunction
+
+function! linediff#SwitchBuffer(bufno)
+  exe a:bufno."buffer"
 endfunction
