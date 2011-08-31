@@ -2,14 +2,14 @@
 " with data, `Init(from, to)` needs to be invoked on that object.
 function! linediff#BlankDiffer(sign_name, sign_number)
   let differ = {
-        \ 'bufno':       -1,
-        \ 'filetype':    '',
-        \ 'from':        -1,
-        \ 'to':          -1,
-        \ 'sign_name':   a:sign_name,
-        \ 'sign_number': a:sign_number,
-        \ 'sign_text':   a:sign_number.'-',
-        \ 'is_blank':    1,
+        \ 'original_buffer': -1,
+        \ 'filetype':        '',
+        \ 'from':            -1,
+        \ 'to':              -1,
+        \ 'sign_name':       a:sign_name,
+        \ 'sign_number':     a:sign_number,
+        \ 'sign_text':       a:sign_number.'-',
+        \ 'is_blank':        1,
         \
         \ 'Init':                 function('linediff#Init'),
         \ 'IsBlank':              function('linediff#IsBlank'),
@@ -27,13 +27,13 @@ endfunction
 " Sets up the Differ with data from the argument list and from the current
 " file.
 function! linediff#Init(from, to) dict
-  let self.bufno    = bufnr('%')
-  let self.filetype = &filetype
-  let self.from     = a:from
-  let self.to       = a:to
+  let self.original_buffer = bufnr('%')
+  let self.filetype        = &filetype
+  let self.from            = a:from
+  let self.to              = a:to
 
-  exe printf("sign place %d1 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.from, self.bufno)
-  exe printf("sign place %d2 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.to,   self.bufno)
+  exe printf("sign place %d1 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.from, self.original_buffer)
+  exe printf("sign place %d2 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.to,   self.original_buffer)
 
   let self.is_blank = 0
 endfunction
@@ -46,7 +46,7 @@ endfunction
 " Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
 " make it usable again.
 function! linediff#Reset() dict
-  let self.bufno    = -1
+  let self.original_buffer    = -1
   let self.filetype = ''
   let self.from     = -1
   let self.to       = -1
@@ -60,7 +60,7 @@ endfunction
 " Extracts the relevant lines from the original buffer and returns them as a
 " list.
 function! linediff#Lines() dict
-  return getbufline(self.bufno, self.from, self.to)
+  return getbufline(self.original_buffer, self.from, self.to)
 endfunction
 
 " Sets up the temporary buffer's filetype and statusline.
@@ -69,7 +69,7 @@ endfunction
 " relevant information in the place of the current filename. If that fails,
 " replaces the whole statusline.
 function! linediff#SetupDiffBuffer() dict
-  let statusline = printf('[%s:%d-%d]', bufname(self.bufno), self.from, self.to)
+  let statusline = printf('[%s:%d-%d]', bufname(self.original_buffer), self.from, self.to)
   if &statusline =~ '%f'
     let statusline = substitute(&statusline, '%f', statusline, '')
   endif
@@ -87,11 +87,10 @@ endfunction
 " changes in the number of lines at all, and empties the diff buffer for some
 " reason.
 function! linediff#UpdateOriginalBuffer() dict
-  let lines           = getbufline('%', 0, '$')
-  let diff_buffer     = bufnr('%')
-  let original_buffer = self.bufno
+  let lines       = getbufline('%', 0, '$')
+  let diff_buffer = bufnr('%')
 
-  exe original_buffer."buffer"
+  exe self.original_buffer."buffer"
   let pos = getpos('.')
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
