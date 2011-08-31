@@ -34,21 +34,7 @@ function! s:LinediffReset()
   call s:differ_two.Reset()
 endfunction
 
-function! s:PerformDiff(first, second)
-  call s:CreateDiffBuffer(a:first, "tabedit")
-  call s:CreateDiffBuffer(a:second, "rightbelow vsplit")
-endfunction
-
-function! s:CreateDiffBuffer(differ, edit_command)
-  let lines     = a:differ.Lines()
-  let temp_file = tempname()
-
-  exe a:edit_command . " " . temp_file
-  call append(0, lines)
-  normal! Gdd
-  set nomodified
-
-  call a:differ.SetupDiffBuffer()
-
-  diffthis
+function! s:PerformDiff(one, two)
+  call a:one.CreateDiffBuffer("tabedit")
+  call a:two.CreateDiffBuffer("rightbelow vsplit")
 endfunction

@@ -3,6 +3,7 @@
 function! linediff#BlankDiffer(sign_name, sign_number)
   let differ = {
         \ 'original_buffer': -1,
+        \ 'diff_buffer':     -1,
         \ 'filetype':        '',
         \ 'from':            -1,
         \ 'to':              -1,
@@ -15,6 +16,7 @@ function! linediff#BlankDiffer(sign_name, sign_number)
         \ 'IsBlank':              function('linediff#IsBlank'),
         \ 'Reset':                function('linediff#Reset'),
         \ 'Lines':                function('linediff#Lines'),
+        \ 'CreateDiffBuffer':     function('linediff#CreateDiffBuffer'),
         \ 'SetupDiffBuffer':      function('linediff#SetupDiffBuffer'),
         \ 'UpdateOriginalBuffer': function('linediff#UpdateOriginalBuffer'),
         \ }
@@ -63,6 +65,23 @@ function! linediff#Lines() dict
   return getbufline(self.original_buffer, self.from, self.to)
 endfunction
 
+" Creates the buffer used for the diffing and connects it to this differ
+" object.
+function! linediff#CreateDiffBuffer(edit_command) dict
+  let lines     = self.Lines()
+  let temp_file = tempname()
+
+  exe a:edit_command . " " . temp_file
+  call append(0, lines)
+  normal! Gdd
+  set nomodified
+
+  let self.diff_buffer = bufnr('%')
+  call self.SetupDiffBuffer()
+
+  diffthis
+endfunction
+
 " Sets up the temporary buffer's filetype and statusline.
 "
 " Attempts to leave the current statusline as it is, and simply add the
@@ -84,19 +103,19 @@ endfunction
 " Updates the original buffer after saving the temporary one.
 "
 " TODO Currently, this only takes care of simple changes, doesn't consider
-" changes in the number of lines at all, and empties the diff buffer for some
-" reason.
+" changes in the number of lines at all.
 function! linediff#UpdateOriginalBuffer() dict
-  let lines       = getbufline('%', 0, '$')
-  let diff_buffer = bufnr('%')
+  let new_lines = getbufline('%', 0, '$')
 
   exe self.original_buffer."buffer"
+
   let pos = getpos('.')
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
-  call append(self.from - 1, lines)
+  call append(self.from - 1, new_lines)
   call setpos('.', pos)
 
-  exe diff_buffer."buffer"
+  exe self.diff_buffer."buffer"
+
   call self.SetupDiffBuffer()
 endfunction
