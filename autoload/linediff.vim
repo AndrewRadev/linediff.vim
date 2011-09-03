@@ -11,15 +11,17 @@ function! linediff#BlankDiffer(sign_name, sign_number)
         \ 'sign_number':     a:sign_number,
         \ 'sign_text':       a:sign_number.'-',
         \ 'is_blank':        1,
+        \ 'other_differ':    {},
         \
-        \ 'Init':                 function('linediff#Init'),
-        \ 'IsBlank':              function('linediff#IsBlank'),
-        \ 'Reset':                function('linediff#Reset'),
-        \ 'Lines':                function('linediff#Lines'),
-        \ 'CreateDiffBuffer':     function('linediff#CreateDiffBuffer'),
-        \ 'SetupDiffBuffer':      function('linediff#SetupDiffBuffer'),
-        \ 'UpdateOriginalBuffer': function('linediff#UpdateOriginalBuffer'),
-        \ 'SwitchBuffer':         function('linediff#SwitchBuffer'),
+        \ 'Init':                      function('linediff#Init'),
+        \ 'IsBlank':                   function('linediff#IsBlank'),
+        \ 'Reset':                     function('linediff#Reset'),
+        \ 'Lines':                     function('linediff#Lines'),
+        \ 'CreateDiffBuffer':          function('linediff#CreateDiffBuffer'),
+        \ 'SetupDiffBuffer':           function('linediff#SetupDiffBuffer'),
+        \ 'UpdateOriginalBuffer':      function('linediff#UpdateOriginalBuffer'),
+        \ 'PossiblyUpdateOtherDiffer': function('linediff#PossiblyUpdateOtherDiffer'),
+        \ 'SwitchBuffer':              function('linediff#SwitchBuffer'),
         \ }
 
   exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
@@ -49,10 +51,12 @@ endfunction
 " Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
 " make it usable again.
 function! linediff#Reset() dict
-  let self.original_buffer    = -1
-  let self.filetype = ''
-  let self.from     = -1
-  let self.to       = -1
+  let self.original_buffer = -1
+  let self.diff_buffer     = -1
+  let self.filetype        = ''
+  let self.from            = -1
+  let self.to              = -1
+  let self.other_differ    = {}
 
   exe "sign unplace ".self.sign_number."1"
   exe "sign unplace ".self.sign_number."2"
@@ -89,24 +93,21 @@ endfunction
 " relevant information in the place of the current filename. If that fails,
 " replaces the whole statusline.
 function! linediff#SetupDiffBuffer() dict
-  let statusline = printf('[%s:%d-%d]', bufname(self.original_buffer), self.from, self.to)
+  let b:differ = self
+
+  let statusline = printf('[%s:%%{b:differ.from}-%%{b:differ.to}]', bufname(self.original_buffer))
   if &statusline =~ '%f'
     let statusline = substitute(&statusline, '%f', statusline, '')
   endif
   exe "setlocal statusline=" . escape(statusline, ' ')
   exe "set filetype=" . self.filetype
 
-  let b:differ = self
-
   autocmd BufWrite <buffer> call b:differ.UpdateOriginalBuffer()
 endfunction
 
-" Updates the original buffer after saving the temporary one. Returns the
-" difference in line counts before and after the update. That's a signed
-" number, negative if the lines were reduced.
-"
-" TODO This number should be used to modify the other differ in order to
-" maintain correct line numbers.
+" Updates the original buffer after saving the temporary one. It might also
+" update the other differ's data, provided a few conditions are met. See
+" linediff#PossiblyUpdateOtherDiffer() for details.
 function! linediff#UpdateOriginalBuffer() dict
   let new_lines = getbufline('%', 0, '$')
 
@@ -124,9 +125,28 @@ function! linediff#UpdateOriginalBuffer() dict
   let self.to = self.from + len(new_lines) - 1
   call self.SetupDiffBuffer()
 
-  return new_line_count - line_count
+  call self.PossiblyUpdateOtherDiffer(new_line_count - line_count)
 endfunction
 
+" If the other differ originates from the same buffer and it's located below
+" this one, we need to update its starting and ending lines, since any change
+" would result in a line shift.
+"
+" a:delta is the change in the number of lines.
+"
+" TODO update signs properly
+function! linediff#PossiblyUpdateOtherDiffer(delta) dict
+  let other = self.other_differ
+
+  if self.original_buffer == other.original_buffer
+        \ && self.to <= other.from
+        \ && a:delta != 0
+    let other.from = other.from + a:delta
+    let other.to   = other.to   + a:delta
+  endif
+endfunction
+
+" Helper method to change to a certain buffer.
 function! linediff#SwitchBuffer(bufno)
   exe a:bufno."buffer"
 endfunction
