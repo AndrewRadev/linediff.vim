@@ -19,6 +19,7 @@ function! linediff#BlankDiffer(sign_name, sign_number)
         \ 'Lines':                     function('linediff#Lines'),
         \ 'CreateDiffBuffer':          function('linediff#CreateDiffBuffer'),
         \ 'SetupDiffBuffer':           function('linediff#SetupDiffBuffer'),
+        \ 'SetupSigns':                function('linediff#SetupSigns'),
         \ 'UpdateOriginalBuffer':      function('linediff#UpdateOriginalBuffer'),
         \ 'PossiblyUpdateOtherDiffer': function('linediff#PossiblyUpdateOtherDiffer'),
         \ 'SwitchBuffer':              function('linediff#SwitchBuffer'),
@@ -37,8 +38,7 @@ function! linediff#Init(from, to) dict
   let self.from            = a:from
   let self.to              = a:to
 
-  exe printf("sign place %d1 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.from, self.original_buffer)
-  exe printf("sign place %d2 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.to,   self.original_buffer)
+  call self.SetupSigns()
 
   let self.is_blank = 0
 endfunction
@@ -105,6 +105,14 @@ function! linediff#SetupDiffBuffer() dict
   autocmd BufWrite <buffer> call b:differ.UpdateOriginalBuffer()
 endfunction
 
+function! linediff#SetupSigns() dict
+  exe "sign unplace ".self.sign_number."1"
+  exe "sign unplace ".self.sign_number."2"
+
+  exe printf("sign place %d1 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.from, self.original_buffer)
+  exe printf("sign place %d2 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.to,   self.original_buffer)
+endfunction
+
 " Updates the original buffer after saving the temporary one. It might also
 " update the other differ's data, provided a few conditions are met. See
 " linediff#PossiblyUpdateOtherDiffer() for details.
@@ -112,11 +120,11 @@ function! linediff#UpdateOriginalBuffer() dict
   let new_lines = getbufline('%', 0, '$')
 
   call self.SwitchBuffer(self.original_buffer)
-  let pos = getpos('.')
+  let saved_cursor = getpos('.')
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
   call append(self.from - 1, new_lines)
-  call setpos('.', pos)
+  call setpos('.', saved_cursor)
   call self.SwitchBuffer(self.diff_buffer)
 
   let line_count     = self.to - self.from + 1
@@ -124,6 +132,7 @@ function! linediff#UpdateOriginalBuffer() dict
 
   let self.to = self.from + len(new_lines) - 1
   call self.SetupDiffBuffer()
+  call self.SetupSigns()
 
   call self.PossiblyUpdateOtherDiffer(new_line_count - line_count)
 endfunction
@@ -133,8 +142,6 @@ endfunction
 " would result in a line shift.
 "
 " a:delta is the change in the number of lines.
-"
-" TODO update signs properly
 function! linediff#PossiblyUpdateOtherDiffer(delta) dict
   let other = self.other_differ
 
@@ -143,6 +150,8 @@ function! linediff#PossiblyUpdateOtherDiffer(delta) dict
         \ && a:delta != 0
     let other.from = other.from + a:delta
     let other.to   = other.to   + a:delta
+
+    call other.SetupSigns()
   endif
 endfunction
 
