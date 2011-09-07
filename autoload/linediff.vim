@@ -101,8 +101,9 @@ function! linediff#SetupDiffBuffer() dict
   endif
   exe "setlocal statusline=" . escape(statusline, ' ')
   exe "set filetype=" . self.filetype
+  setlocal bufhidden=hide
 
-  autocmd BufWrite <buffer> call b:differ.UpdateOriginalBuffer()
+  autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
 endfunction
 
 function! linediff#SetupSigns() dict
@@ -157,5 +158,5 @@ endfunction
 
 " Helper method to change to a certain buffer.
 function! linediff#SwitchBuffer(bufno)
-  exe a:bufno."buffer"
+  exe "buffer ".a:bufno
 endfunction
