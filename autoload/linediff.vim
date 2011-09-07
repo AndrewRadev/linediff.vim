@@ -16,6 +16,7 @@ function! linediff#BlankDiffer(sign_name, sign_number)
         \ 'Init':                      function('linediff#Init'),
         \ 'IsBlank':                   function('linediff#IsBlank'),
         \ 'Reset':                     function('linediff#Reset'),
+        \ 'CloseDiffBuffer':           function('linediff#CloseDiffBuffer'),
         \ 'Lines':                     function('linediff#Lines'),
         \ 'CreateDiffBuffer':          function('linediff#CreateDiffBuffer'),
         \ 'SetupDiffBuffer':           function('linediff#SetupDiffBuffer'),
@@ -51,6 +52,8 @@ endfunction
 " Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
 " make it usable again.
 function! linediff#Reset() dict
+  call self.CloseDiffBuffer()
+
   let self.original_buffer = -1
   let self.diff_buffer     = -1
   let self.filetype        = ''
@@ -62,6 +65,10 @@ function! linediff#Reset() dict
   exe "sign unplace ".self.sign_number."2"
 
   let self.is_blank = 1
+endfunction
+
+function! linediff#CloseDiffBuffer() dict
+  exe "bdelete ".self.diff_buffer
 endfunction
 
 " Extracts the relevant lines from the original buffer and returns them as a
