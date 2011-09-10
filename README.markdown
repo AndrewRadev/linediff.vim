@@ -25,6 +25,9 @@ performs the change. Saving is something you should do later.
 Executing the command `:LinediffReset` will delete the temporary buffers and
 remove the signs.
 
+Executing a new `:Linediff` will do the same as `:LinediffReset`, but will also
+initiate a new diff process.
+
 **Note that you shouldn't linediff two pieces of text that overlap**. Not that
 anything horribly bad will happen, it just won't work as you'd hope to. I
 don't feel like it's a very important use case, but if someone requests
