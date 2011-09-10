@@ -3,6 +3,9 @@ CONTENTS                                      *linediff* *linediff-contents*
 
     Installation...........................: |linediff-installation|
     Usage..................................: |linediff-usage|
+    Commands...............................: |linediff-commands|
+    Internals..............................: |linediff-internals|
+    Issues.................................: |linediff-issues|
 
 
 ==============================================================================
@@ -26,3 +29,69 @@ directory: plugin, autoload, doc.
 
 ==============================================================================
 USAGE                                                         *linediff-usage*
+
+The plugin provides a simple command, |:Linediff|, which is used to
+diff two separate blocks of text.
+
+A simple example:
+
+    def one
+      two
+    end
+
+    def two
+      three
+    end
+
+If we mark the first three lines, starting from "def one", in visual mode, and
+execute the |:Linediff| command, the signs "1-" will be placed at the start
+and at the end of the visual mode's range. Doing the same thing on the bottom
+half of the code, starting from "def two", will result in the signs "2-"
+placed there. After that, a new tab will be opened with the two blocks of code in
+vertical splits, diffed against each other.
+
+The two buffers are temporary, but when any one of them is saved, its original
+buffer is updated. Note that this does not save the original buffer, just
+performs the change. Saving is something you should do later.
+
+Executing the command |:LinediffReset| will delete the temporary buffers and
+remove the signs.
+
+Executing a new |:Linediff| will do the same as |:LinediffReset|, but will also
+initiate a new diff process.
+
+==============================================================================
+COMMANDS                                                   *linediff-commands*
+
+                                              *:Linediff*
+:Linediff         The main interface of the plugin. Needs to be executed on a
+                  range of lines, which will be marked with a sign. On the
+                  selection of the second such range, the command will open a
+                  tab with the two ranges in vertically split windows and
+                  perform a diff on them. Saving one of the two buffers will
+                  automatically update the original buffer the text was taken
+                  from.
+
+                  When executed for a third time, a new line diff is
+                  initiated, and the current process is reset, much like
+                  the effect of |LinediffReset| would be.
+
+
+                                              *:LinediffReset*
+:LinediffReset    Removes the signs denoting the diffed regions and deletes the
+                  temporary buffers, used for the diff. The original buffers
+                  are untouched by this, which means that any updates to them,
+                  performed by the diff process will remain.
+
+==============================================================================
+INTERNALS                                                 *linediff-internals*
+
+TODO
+
+==============================================================================
+ISSUES                                                       *linediff-issues*
+
+You shouldn't linediff two pieces of text that overlap. Not that anything
+horribly bad will happen, it just won't work as you'd hope to. I don't feel
+like it's a very important use case, but if someone requests sensible behaviour
+in that case, I should be able to get it working.
