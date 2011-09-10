@@ -1,6 +1,6 @@
 " Constructs a Differ object that is still unbound. To initialize the object
 " with data, `Init(from, to)` needs to be invoked on that object.
-function! linediff#BlankDiffer(sign_name, sign_number)
+function! linediff#differ#New(sign_name, sign_number)
   let differ = {
         \ 'original_buffer': -1,
         \ 'diff_buffer':     -1,
@@ -13,17 +13,16 @@ function! linediff#BlankDiffer(sign_name, sign_number)
         \ 'is_blank':        1,
         \ 'other_differ':    {},
         \
-        \ 'Init':                      function('linediff#Init'),
-        \ 'IsBlank':                   function('linediff#IsBlank'),
-        \ 'Reset':                     function('linediff#Reset'),
-        \ 'CloseDiffBuffer':           function('linediff#CloseDiffBuffer'),
-        \ 'Lines':                     function('linediff#Lines'),
-        \ 'CreateDiffBuffer':          function('linediff#CreateDiffBuffer'),
-        \ 'SetupDiffBuffer':           function('linediff#SetupDiffBuffer'),
-        \ 'SetupSigns':                function('linediff#SetupSigns'),
-        \ 'UpdateOriginalBuffer':      function('linediff#UpdateOriginalBuffer'),
-        \ 'PossiblyUpdateOtherDiffer': function('linediff#PossiblyUpdateOtherDiffer'),
-        \ 'SwitchBuffer':              function('linediff#SwitchBuffer'),
+        \ 'Init':                      function('linediff#differ#Init'),
+        \ 'IsBlank':                   function('linediff#differ#IsBlank'),
+        \ 'Reset':                     function('linediff#differ#Reset'),
+        \ 'Lines':                     function('linediff#differ#Lines'),
+        \ 'CreateDiffBuffer':          function('linediff#differ#CreateDiffBuffer'),
+        \ 'SetupDiffBuffer':           function('linediff#differ#SetupDiffBuffer'),
+        \ 'CloseDiffBuffer':           function('linediff#differ#CloseDiffBuffer'),
+        \ 'UpdateOriginalBuffer':      function('linediff#differ#UpdateOriginalBuffer'),
+        \ 'PossiblyUpdateOtherDiffer': function('linediff#differ#PossiblyUpdateOtherDiffer'),
+        \ 'SetupSigns':                function('linediff#differ#SetupSigns')
         \ }
 
   exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
@@ -33,7 +32,7 @@ endfunction
 
 " Sets up the Differ with data from the argument list and from the current
 " file.
-function! linediff#Init(from, to) dict
+function! linediff#differ#Init(from, to) dict
   let self.original_buffer = bufnr('%')
   let self.filetype        = &filetype
   let self.from            = a:from
@@ -45,13 +44,13 @@ function! linediff#Init(from, to) dict
 endfunction
 
 " Returns true if the differ is blank, which means not initialized with data.
-function! linediff#IsBlank() dict
+function! linediff#differ#IsBlank() dict
   return self.is_blank
 endfunction
 
 " Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
 " make it usable again.
-function! linediff#Reset() dict
+function! linediff#differ#Reset() dict
   call self.CloseDiffBuffer()
 
   let self.original_buffer = -1
@@ -67,19 +66,15 @@ function! linediff#Reset() dict
   let self.is_blank = 1
 endfunction
 
-function! linediff#CloseDiffBuffer() dict
-  exe "bdelete ".self.diff_buffer
-endfunction
-
 " Extracts the relevant lines from the original buffer and returns them as a
 " list.
-function! linediff#Lines() dict
+function! linediff#differ#Lines() dict
   return getbufline(self.original_buffer, self.from, self.to)
 endfunction
 
 " Creates the buffer used for the diffing and connects it to this differ
 " object.
-function! linediff#CreateDiffBuffer(edit_command) dict
+function! linediff#differ#CreateDiffBuffer(edit_command) dict
   let lines     = self.Lines()
   let temp_file = tempname()
 
@@ -99,7 +94,7 @@ endfunction
 " Attempts to leave the current statusline as it is, and simply add the
 " relevant information in the place of the current filename. If that fails,
 " replaces the whole statusline.
-function! linediff#SetupDiffBuffer() dict
+function! linediff#differ#SetupDiffBuffer() dict
   let b:differ = self
 
   let statusline = printf('[%s:%%{b:differ.from}-%%{b:differ.to}]', bufname(self.original_buffer))
@@ -113,7 +108,11 @@ function! linediff#SetupDiffBuffer() dict
   autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
 endfunction
 
-function! linediff#SetupSigns() dict
+function! linediff#differ#CloseDiffBuffer() dict
+  exe "bdelete ".self.diff_buffer
+endfunction
+
+function! linediff#differ#SetupSigns() dict
   exe "sign unplace ".self.sign_number."1"
   exe "sign unplace ".self.sign_number."2"
 
@@ -123,17 +122,17 @@ endfunction
 
 " Updates the original buffer after saving the temporary one. It might also
 " update the other differ's data, provided a few conditions are met. See
-" linediff#PossiblyUpdateOtherDiffer() for details.
-function! linediff#UpdateOriginalBuffer() dict
+" linediff#differ#PossiblyUpdateOtherDiffer() for details.
+function! linediff#differ#UpdateOriginalBuffer() dict
   let new_lines = getbufline('%', 0, '$')
 
-  call self.SwitchBuffer(self.original_buffer)
+  call linediff#util#SwitchBuffer(self.original_buffer)
   let saved_cursor = getpos('.')
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
   call append(self.from - 1, new_lines)
   call setpos('.', saved_cursor)
-  call self.SwitchBuffer(self.diff_buffer)
+  call linediff#util#SwitchBuffer(self.diff_buffer)
 
   let line_count     = self.to - self.from + 1
   let new_line_count = len(new_lines)
@@ -150,7 +149,7 @@ endfunction
 " would result in a line shift.
 "
 " a:delta is the change in the number of lines.
-function! linediff#PossiblyUpdateOtherDiffer(delta) dict
+function! linediff#differ#PossiblyUpdateOtherDiffer(delta) dict
   let other = self.other_differ
 
   if self.original_buffer == other.original_buffer
@@ -161,9 +160,4 @@ function! linediff#PossiblyUpdateOtherDiffer(delta) dict
 
     call other.SetupSigns()
   endif
-endfunction
-
-" Helper method to change to a certain buffer.
-function! linediff#SwitchBuffer(bufno)
-  exe "buffer ".a:bufno
 endfunction

@@ -5,8 +5,8 @@
 "
 function! s:Init()
   if !exists('s:differ_one')
-    let s:differ_one = linediff#BlankDiffer('linediff_one', 1)
-    let s:differ_two = linediff#BlankDiffer('linediff_two', 2)
+    let s:differ_one = linediff#differ#New('linediff_one', 1)
+    let s:differ_two = linediff#differ#New('linediff_two', 2)
   endif
 endfunction
 
