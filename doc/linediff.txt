@@ -86,7 +86,20 @@ COMMANDS                                                   *linediff-commands*
 ==============================================================================
 INTERNALS                                                 *linediff-internals*
 
-TODO
+When a block of text is diffed with the plugin, a "Differ" object is
+initialized with its relevant data. The differ contains information about the
+buffer number, filetype, start and end lines of the text, and a few other
+things. Almost all functions the plugin uses are scoped to this object in
+order to keep the interface simple. They're located under
+"autoload/linediff/differ.vim" and should be fairly understandable.
+
+Functions that are general-purpose utilities are placed in
+"autoload/linediff/util.vim".
+
+The two differ objects that are required for the two diff buffers are linked
+to each other out of necessity. If they originate from a single buffer,
+updating one would move the lines of the other, so that one would have to be
+updated as well. Apart from that, they have no interaction.
 
 ==============================================================================
 ISSUES                                                       *linediff-issues*

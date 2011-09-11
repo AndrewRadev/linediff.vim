@@ -126,6 +126,8 @@ endfunction
 function! linediff#differ#UpdateOriginalBuffer() dict
   let new_lines = getbufline('%', 0, '$')
 
+  " Switch to the original buffer, delete the relevant lines, add the new
+  " ones, switch back to the diff buffer.
   call linediff#util#SwitchBuffer(self.original_buffer)
   let saved_cursor = getpos('.')
   call cursor(self.from, 1)
@@ -134,6 +136,8 @@ function! linediff#differ#UpdateOriginalBuffer() dict
   call setpos('.', saved_cursor)
   call linediff#util#SwitchBuffer(self.diff_buffer)
 
+  " Keep the difference in lines to know how to update the other differ if
+  " necessary.
   let line_count     = self.to - self.from + 1
   let new_line_count = len(new_lines)
 
