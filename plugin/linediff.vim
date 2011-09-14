@@ -1,3 +1,11 @@
+if exists("g:loaded_linediff") || &cp
+  finish
+endif
+
+let g:loaded_linediff = '0.1.0' " version number
+let s:keepcpo         = &cpo
+set cpo&vim
+
 " Initialized lazily to avoid executing the autoload file before it's really
 " needed.
 "
