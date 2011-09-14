@@ -60,6 +60,15 @@ remove the signs.
 Executing a new |:Linediff| will do the same as |:LinediffReset|, but will
 also initiate a new diff process.
 
+The statuslines of the two temporary buffers will be changed to contain:
+    - The original buffer
+    - The starting line of the selected segment
+    - The ending line of the selected segment
+
+If you're using a custom statusline and it contains "%f" (the current file's
+name), that token will simply be substituted by the above data. Otherwise, the
+entire statusline will be set to a custom one.
+
 ==============================================================================
 COMMANDS                                                   *linediff-commands*
 
