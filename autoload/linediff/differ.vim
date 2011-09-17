@@ -109,7 +109,9 @@ function! linediff#differ#SetupDiffBuffer() dict
 endfunction
 
 function! linediff#differ#CloseDiffBuffer() dict
-  exe "bdelete ".self.diff_buffer
+  if bufexists(self.diff_buffer)
+    exe "bdelete ".self.diff_buffer
+  endif
 endfunction
 
 function! linediff#differ#SetupSigns() dict
