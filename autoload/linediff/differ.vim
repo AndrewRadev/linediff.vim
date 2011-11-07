@@ -98,10 +98,10 @@ function! linediff#differ#SetupDiffBuffer() dict
   let b:differ = self
 
   let statusline = printf('[%s:%%{b:differ.from}-%%{b:differ.to}]', bufname(self.original_buffer))
-  if &statusline =~ '%f'
-    let statusline = substitute(&statusline, '%f', statusline, '')
+  if &statusline =~ '%[fF]'
+    let statusline = substitute(&statusline, '%[fF]', statusline, '')
   endif
-  exe "setlocal statusline=" . escape(statusline, ' ')
+  exe "setlocal statusline=" . escape(statusline, ' |')
   exe "set filetype=" . self.filetype
   setlocal bufhidden=hide
 
