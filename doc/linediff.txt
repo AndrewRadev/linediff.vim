@@ -24,7 +24,7 @@ The command is (provided you're in ~/.vim):
     git submodule add git://github.com/AndrewRadev/linediff.vim.git bundle/linediff
 <
 
-Another way is to simply copy all the essential directories inside the ~.vim/
+Another way is to simply copy all the essential directories inside the ~/.vim
 directory: plugin, autoload, doc.
 
 ==============================================================================
