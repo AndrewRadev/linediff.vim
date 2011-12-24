@@ -80,7 +80,7 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
 
   exe a:edit_command . " " . temp_file
   call append(0, lines)
-  normal! Gdd
+  $delete _
   set nomodified
 
   let self.diff_buffer = bufnr('%')
