@@ -101,7 +101,7 @@ function! linediff#differ#SetupDiffBuffer() dict
   if &statusline =~ '%[fF]'
     let statusline = substitute(&statusline, '%[fF]', escape(statusline, '\'), '')
   endif
-  exe "setlocal statusline=" . escape(statusline, ' |')
+  exe "setlocal statusline=" . escape(statusline, ' |\')
   exe "set filetype=" . self.filetype
   setlocal bufhidden=hide
 
