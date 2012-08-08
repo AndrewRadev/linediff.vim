@@ -43,6 +43,8 @@ function! s:PerformDiff(one, two)
   call a:one.CreateDiffBuffer("tabedit")
   call a:two.CreateDiffBuffer("rightbelow vsplit")
 
+  wincmd t " move to the first diff buffer
+
   let a:one.other_differ = a:two
   let a:two.other_differ = a:one
 endfunction

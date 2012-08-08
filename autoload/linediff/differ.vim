@@ -82,6 +82,7 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
   call append(0, lines)
   $delete _
   set nomodified
+  normal! gg
 
   let self.diff_buffer = bufnr('%')
   call self.SetupDiffBuffer()
