@@ -82,23 +82,20 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
   exe a:edit_command . " " . temp_file
   call append(0, lines)
   $delete _
-  call self.Indent()
   set nomodified
   normal! gg
 
   let self.diff_buffer = bufnr('%')
   call self.SetupDiffBuffer()
+  call self.Indent()
 
   diffthis
 endfunction
 
 " Indents the current buffer content so that format can be ignored.
 function! linediff#differ#Indent() dict
-  if !exists("g:linediff_indent")
-    let g:linediff_indent = 0
-  endif
-  if g:linediff_indent == 1
-    normal! gg=G
+  if g:linediff_indent
+    silent normal! gg=G
   endif
 endfunction
 

@@ -1,10 +1,14 @@
-if exists("g:loaded_linediff") || &cp
+if exists('g:loaded_linediff') || &cp
   finish
 endif
 
 let g:loaded_linediff = '0.1.1' " version number
 let s:keepcpo         = &cpo
 set cpo&vim
+
+if !exists('g:linediff_indent')
+  let g:linediff_indent = 0
+endif
 
 " Initialized lazily to avoid executing the autoload file before it's really
 " needed.

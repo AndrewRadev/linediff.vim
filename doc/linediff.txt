@@ -4,6 +4,7 @@ CONTENTS                                      *linediff* *linediff-contents*
     Installation...........................: |linediff-installation|
     Usage..................................: |linediff-usage|
     Commands...............................: |linediff-commands|
+    Settings...............................: |linediff-settings|
     Internals..............................: |linediff-internals|
     Issues.................................: |linediff-issues|
 
@@ -91,6 +92,20 @@ COMMANDS                                                   *linediff-commands*
                   the temporary buffers, used for the diff. The original
                   buffers are untouched by this, which means that any updates
                   to them, performed by the diff process will remain.
+
+==============================================================================
+SETTINGS                                                   *linediff-settings*
+
+                                                           *g:linediff_indent*
+>
+    let g:linediff_indent = 1
+<
+
+Default value: 0
+
+If this flag is set to 1, linediff will reindent the diffed sections in order
+to minimize differences caused by formatting. This may change the buffers'
+contents.
 
 ==============================================================================
 INTERNALS                                                 *linediff-internals*
