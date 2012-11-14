@@ -16,6 +16,7 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'Init':                      function('linediff#differ#Init'),
         \ 'IsBlank':                   function('linediff#differ#IsBlank'),
         \ 'Reset':                     function('linediff#differ#Reset'),
+        \ 'CloseAndReset':             function('linediff#differ#CloseAndReset'),
         \ 'Lines':                     function('linediff#differ#Lines'),
         \ 'Indent':                    function('linediff#differ#Indent'),
         \ 'CreateDiffBuffer':          function('linediff#differ#CreateDiffBuffer'),
@@ -63,6 +64,13 @@ function! linediff#differ#Reset() dict
   exe "sign unplace ".self.sign_number."2"
 
   let self.is_blank = 1
+endfunction
+
+" Closes the diff buffer and resets. The two actions are separate to avoid
+" problems with closing already closed buffers.
+function! linediff#differ#CloseAndReset() dict
+  call self.CloseDiffBuffer()
+  call self.Reset()
 endfunction
 
 " Extracts the relevant lines from the original buffer and returns them as a
@@ -134,17 +142,22 @@ endfunction
 " update the other differ's data, provided a few conditions are met. See
 " linediff#differ#PossiblyUpdateOtherDiffer() for details.
 function! linediff#differ#UpdateOriginalBuffer() dict
+  if self.IsBlank()
+    return
+  endif
+
+  let saved_diff_buffer_view = winsaveview()
   let new_lines = getbufline('%', 0, '$')
 
   " Switch to the original buffer, delete the relevant lines, add the new
   " ones, switch back to the diff buffer.
   set bufhidden=hide
   call linediff#util#SwitchBuffer(self.original_buffer)
-  let saved_view = winsaveview()
+  let saved_original_buffer_view = winsaveview()
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
   call append(self.from - 1, new_lines)
-  call winrestview(saved_view)
+  call winrestview(saved_original_buffer_view)
   call linediff#util#SwitchBuffer(self.diff_buffer)
   set bufhidden=wipe
 
@@ -158,6 +171,7 @@ function! linediff#differ#UpdateOriginalBuffer() dict
   call self.SetupSigns()
 
   call self.PossiblyUpdateOtherDiffer(new_line_count - line_count)
+  call winrestview(saved_diff_buffer_view)
 endfunction
 
 " If the other differ originates from the same buffer and it's located below

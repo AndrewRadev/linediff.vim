@@ -37,19 +37,16 @@ endfunction
 
 command! LinediffReset call s:LinediffReset()
 function! s:LinediffReset()
-  call s:differ_one.CloseDiffBuffer()
-  call s:differ_one.Reset()
-
-  call s:differ_two.CloseDiffBuffer()
-  call s:differ_two.Reset()
+  call s:differ_one.CloseAndReset()
+  call s:differ_two.CloseAndReset()
 endfunction
 
 function! s:PerformDiff()
   call s:differ_one.CreateDiffBuffer("tabedit")
-  autocmd BufUnload <buffer> silent call s:differ_one.Reset()
+  autocmd BufUnload <buffer> silent call s:differ_one.Reset() | silent call s:differ_two.Reset()
 
   call s:differ_two.CreateDiffBuffer("rightbelow vsplit")
-  autocmd BufUnload <buffer> silent call s:differ_two.Reset()
+  autocmd BufUnload <buffer> silent call s:differ_two.Reset() | silent call s:differ_one.Reset()
 
   wincmd t " move to the first diff buffer
 
