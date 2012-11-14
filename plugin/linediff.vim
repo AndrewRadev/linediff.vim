@@ -28,27 +28,31 @@ function! s:Linediff(from, to)
   elseif s:differ_two.IsBlank()
     call s:differ_two.Init(a:from, a:to)
 
-    call s:PerformDiff(s:differ_one, s:differ_two)
+    call s:PerformDiff()
   else
-    call s:differ_one.Reset()
-    call s:differ_two.Reset()
-
+    call s:LinediffReset()
     call s:Linediff(a:from, a:to)
   endif
 endfunction
 
 command! LinediffReset call s:LinediffReset()
 function! s:LinediffReset()
+  call s:differ_one.CloseDiffBuffer()
   call s:differ_one.Reset()
+
+  call s:differ_two.CloseDiffBuffer()
   call s:differ_two.Reset()
 endfunction
 
-function! s:PerformDiff(one, two)
-  call a:one.CreateDiffBuffer("tabedit")
-  call a:two.CreateDiffBuffer("rightbelow vsplit")
+function! s:PerformDiff()
+  call s:differ_one.CreateDiffBuffer("tabedit")
+  autocmd BufUnload <buffer> silent call s:differ_one.Reset()
+
+  call s:differ_two.CreateDiffBuffer("rightbelow vsplit")
+  autocmd BufUnload <buffer> silent call s:differ_two.Reset()
 
   wincmd t " move to the first diff buffer
 
-  let a:one.other_differ = a:two
-  let a:two.other_differ = a:one
+  let s:differ_one.other_differ = s:differ_two
+  let s:differ_two.other_differ = s:differ_one
 endfunction

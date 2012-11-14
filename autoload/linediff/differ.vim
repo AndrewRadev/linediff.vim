@@ -52,8 +52,6 @@ endfunction
 " Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
 " make it usable again.
 function! linediff#differ#Reset() dict
-  call self.CloseDiffBuffer()
-
   let self.original_buffer = -1
   let self.diff_buffer     = -1
   let self.filetype        = ''
@@ -113,7 +111,7 @@ function! linediff#differ#SetupDiffBuffer() dict
   endif
   exe "setlocal statusline=" . escape(statusline, ' |\')
   exe "set filetype=" . self.filetype
-  setlocal bufhidden=hide
+  setlocal bufhidden=wipe
 
   autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
 endfunction
@@ -140,13 +138,15 @@ function! linediff#differ#UpdateOriginalBuffer() dict
 
   " Switch to the original buffer, delete the relevant lines, add the new
   " ones, switch back to the diff buffer.
+  set bufhidden=hide
   call linediff#util#SwitchBuffer(self.original_buffer)
-  let saved_cursor = getpos('.')
+  let saved_view = winsaveview()
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
   call append(self.from - 1, new_lines)
-  call setpos('.', saved_cursor)
+  call winrestview(saved_view)
   call linediff#util#SwitchBuffer(self.diff_buffer)
+  set bufhidden=wipe
 
   " Keep the difference in lines to know how to update the other differ if
   " necessary.
