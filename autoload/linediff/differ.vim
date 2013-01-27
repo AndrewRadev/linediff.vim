@@ -85,9 +85,9 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
   let lines     = self.Lines()
   let temp_file = tempname()
 
-  exe a:edit_command . " " . temp_file
+  silent exe a:edit_command . " " . temp_file
   call append(0, lines)
-  $delete _
+  silent $delete _
   set nomodified
   normal! gg
 
