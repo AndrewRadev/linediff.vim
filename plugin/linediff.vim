@@ -53,3 +53,5 @@ function! s:PerformDiff()
   let s:differ_one.other_differ = s:differ_two
   let s:differ_two.other_differ = s:differ_one
 endfunction
+
+let &cpo = s:keepcpo
