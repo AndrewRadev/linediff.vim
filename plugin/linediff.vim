@@ -41,12 +41,20 @@ function! s:LinediffReset()
   call s:differ_two.CloseAndReset()
 endfunction
 
+" The closing logic is a bit roundabout, since changing a buffer in a
+" BufUnload autocommand doesn't seem to work.
+"
+" The process is: if a window is entered after the other differ was destroyed,
+" destroy this one as well and close the window.
+"
 function! s:PerformDiff()
   call s:differ_one.CreateDiffBuffer("tabedit")
-  autocmd BufUnload <buffer> silent call s:differ_one.Reset() | silent call s:differ_two.Reset()
+  autocmd BufUnload <buffer> silent call s:differ_one.Reset()
+  autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset() | endif
 
   call s:differ_two.CreateDiffBuffer("rightbelow vsplit")
-  autocmd BufUnload <buffer> silent call s:differ_two.Reset() | silent call s:differ_one.Reset()
+  autocmd BufUnload <buffer> silent call s:differ_two.Reset()
+  autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset() | endif
 
   wincmd t " move to the first diff buffer
 
