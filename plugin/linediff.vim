@@ -13,7 +13,7 @@ endif
 " Initialized lazily to avoid executing the autoload file before it's really
 " needed.
 function! s:Init()
-  if !exists('s:differ_one')
+  if !s:IsInitialized()
     let s:differ_one = linediff#differ#New('linediff_one', 1)
     let s:differ_two = linediff#differ#New('linediff_two', 2)
   endif
@@ -37,10 +37,15 @@ endfunction
 
 command! LinediffReset call s:LinediffReset()
 function! s:LinediffReset()
-  if exists('s:differ_one')
+  if s:IsInitialized()
     call s:differ_one.CloseAndReset()
     call s:differ_two.CloseAndReset()
   endif
+endfunction
+
+" Checks whether plugin is initialized.
+function! s:IsInitialized()
+  return exists('s:differ_one')
 endfunction
 
 " The closing logic is a bit roundabout, since changing a buffer in a
