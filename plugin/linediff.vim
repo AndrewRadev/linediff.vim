@@ -37,8 +37,10 @@ endfunction
 
 command! LinediffReset call s:LinediffReset()
 function! s:LinediffReset()
-  call s:differ_one.CloseAndReset()
-  call s:differ_two.CloseAndReset()
+  if exists('s:differ_one')
+    call s:differ_one.CloseAndReset()
+    call s:differ_two.CloseAndReset()
+  endif
 endfunction
 
 " The closing logic is a bit roundabout, since changing a buffer in a
