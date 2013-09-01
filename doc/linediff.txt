@@ -1,3 +1,5 @@
+*linediff.txt*	Diff two blocks of text
+
 ==============================================================================
 CONTENTS                                      *linediff* *linediff-contents*
 
