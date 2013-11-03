@@ -10,6 +10,14 @@ if !exists('g:linediff_indent')
   let g:linediff_indent = 0
 endif
 
+if !exists('g:linediff_first_buffer_command')
+  let g:linediff_first_buffer_command = 'tabnew'
+endif
+
+if !exists('g:linediff_second_buffer_command')
+  let g:linediff_second_buffer_command = 'rightbelow vertical new'
+endif
+
 " Initialized lazily to avoid executing the autoload file before it's really
 " needed.
 function! s:Init()
@@ -55,11 +63,11 @@ endfunction
 " destroy this one as well and close the window.
 "
 function! s:PerformDiff()
-  call s:differ_one.CreateDiffBuffer("tabedit")
+  call s:differ_one.CreateDiffBuffer(g:linediff_first_buffer_command)
   autocmd BufUnload <buffer> silent call s:differ_one.Reset()
   autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset() | endif
 
-  call s:differ_two.CreateDiffBuffer("rightbelow vsplit")
+  call s:differ_two.CreateDiffBuffer(g:linediff_second_buffer_command)
   autocmd BufUnload <buffer> silent call s:differ_two.Reset()
   autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset() | endif
 

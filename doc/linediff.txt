@@ -109,6 +109,32 @@ If this flag is set to 1, linediff will reindent the diffed sections in order
 to minimize differences caused by formatting. This may change the buffers'
 contents.
 
+                                            *g:linediff_first_buffer_command*
+                                            *g:linediff_second_buffer_command*
+>
+    let g:linediff_first_buffer_command  = 'new'
+    let g:linediff_second_buffer_command = 'vertical new'
+<
+
+Default values: "tabnew" and "rightbelow vertical new", respectively.
+
+These variables control what commands are used to open the two temporary
+buffers. By default, the first one will open a blank new tab, and the second
+one will split it vertically, from the right. This should ensure a pretty
+sensible setup.
+
+As an example, you can set them like so:
+>
+    let g:linediff_first_buffer_command  = 'leftabove new'
+    let g:linediff_second_buffer_command = 'rightbelow vertical new'
+<
+With this, the buffers will be positioned in a split above the current buffer,
+the first one on the left, and the second one on the right.
+
+You can control the positioning with judicious use of |:rightbelow| and
+|:leftabove|. If you omit these commands, the view will simply follow your
+default settings when opening new splits.
+
 ==============================================================================
 INTERNALS                                                 *linediff-internals*
 
