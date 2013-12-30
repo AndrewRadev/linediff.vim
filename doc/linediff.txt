@@ -109,6 +109,26 @@ If this flag is set to 1, linediff will reindent the diffed sections in order
 to minimize differences caused by formatting. This may change the buffers'
 contents.
 
+                                                      *g:linediff_buffer_type*
+>
+    let g:linediff_buffer_type = 'scratch'
+<
+Default value: "tempfile"
+
+This variable can have one of two values, "scratch" or "tempfile".
+
+If it is set to "scratch", the created proxy buffer is not connected to any
+file. The benefit is that the filename can then be set to be an informative
+string instead of a weird temporary filename. The drawback is that you can't
+run some external commands on this buffer, since there is no real backing
+file.
+
+If it is set to "tempfile" (the default), the proxy buffer is actually a
+temporary file. The benefit is that you run external commands that expect an
+actual file (like executing |:make|). The drawback is that the only way to
+display information on the proxy is by hacking the statusline, which may cause
+issues and can't work reliably on all statuslines.
+
                                             *g:linediff_first_buffer_command*
                                             *g:linediff_second_buffer_command*
 >

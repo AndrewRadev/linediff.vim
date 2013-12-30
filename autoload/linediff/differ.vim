@@ -82,14 +82,26 @@ endfunction
 " Creates the buffer used for the diffing and connects it to this differ
 " object.
 function! linediff#differ#CreateDiffBuffer(edit_command) dict
-  let lines     = self.Lines()
-  let temp_file = tempname()
+  let lines = self.Lines()
 
-  silent exe a:edit_command . " " . temp_file
-  call append(0, lines)
-  silent $delete _
-  set nomodified
-  normal! gg
+  if g:linediff_buffer_type == 'tempfile'
+    let temp_file = tempname()
+
+    silent exe a:edit_command . " " . temp_file
+    call append(0, lines)
+    silent $delete _
+
+    set nomodified
+    normal! gg
+  else " g:linediff_buffer_type == 'scratch'
+    silent exe a:edit_command
+
+    call append(0, lines)
+    silent $delete _
+
+    setlocal buftype=acwrite
+    setlocal bufhidden=wipe
+  endif
 
   let self.diff_buffer = bufnr('%')
   call self.SetupDiffBuffer()
@@ -113,15 +125,24 @@ endfunction
 function! linediff#differ#SetupDiffBuffer() dict
   let b:differ = self
 
-  let statusline = printf('[%s:%%{b:differ.from}-%%{b:differ.to}]', bufname(self.original_buffer))
-  if &statusline =~ '%[fF]'
-    let statusline = substitute(&statusline, '%[fF]', escape(statusline, '\'), '')
-  endif
-  exe "setlocal statusline=" . escape(statusline, ' |\')
-  exe "set filetype=" . self.filetype
-  setlocal bufhidden=wipe
+  if g:linediff_buffer_type == 'tempfile'
+    let statusline = printf('[%s:%%{b:differ.from}-%%{b:differ.to}]', bufname(self.original_buffer))
+    if &statusline =~ '%[fF]'
+      let statusline = substitute(&statusline, '%[fF]', escape(statusline, '\'), '')
+    endif
+    exe "setlocal statusline=" . escape(statusline, ' |\')
+    exe "set filetype=" . self.filetype
+    setlocal bufhidden=wipe
 
-  autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
+    autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
+  else " g:linediff_buffer_type == 'scratch'
+    let description = printf('[%s:%s-%s]', bufname(self.original_buffer), self.from, self.to)
+    silent exec 'keepalt file ' . escape(description, '[')
+    exe "set filetype=" . self.filetype
+    set nomodified
+
+    autocmd BufWriteCmd <buffer> silent call b:differ.UpdateOriginalBuffer()
+  endif
 endfunction
 
 function! linediff#differ#CloseDiffBuffer() dict

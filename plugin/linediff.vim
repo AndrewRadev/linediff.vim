@@ -10,6 +10,11 @@ if !exists('g:linediff_indent')
   let g:linediff_indent = 0
 endif
 
+if !exists('g:linediff_buffer_type')
+  " One of: 'tempfile', 'scratch'
+  let g:linediff_buffer_type = 'tempfile'
+endif
+
 if !exists('g:linediff_first_buffer_command')
   let g:linediff_first_buffer_command = 'tabnew'
 endif
