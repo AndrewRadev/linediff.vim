@@ -68,8 +68,8 @@ endfunction
 
 " Closes the diff buffer and resets. The two actions are separate to avoid
 " problems with closing already closed buffers.
-function! linediff#differ#CloseAndReset() dict
-  call self.CloseDiffBuffer()
+function! linediff#differ#CloseAndReset(force) dict
+  call self.CloseDiffBuffer(a:force)
   call self.Reset()
 endfunction
 
@@ -145,9 +145,10 @@ function! linediff#differ#SetupDiffBuffer() dict
   endif
 endfunction
 
-function! linediff#differ#CloseDiffBuffer() dict
+function! linediff#differ#CloseDiffBuffer(force) dict
   if bufexists(self.diff_buffer)
-    exe "bdelete ".self.diff_buffer
+    let bang = a:force ? '!' : ''
+    exe "bdelete".bang." ".self.diff_buffer
   endif
 endfunction
 

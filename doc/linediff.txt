@@ -90,10 +90,12 @@ COMMANDS                                                   *linediff-commands*
 
 
                                               *:LinediffReset*
-:LinediffReset    Removes the signs denoting the diffed regions and deletes
+:LinediffReset[!] Removes the signs denoting the diffed regions and deletes
                   the temporary buffers, used for the diff. The original
                   buffers are untouched by this, which means that any updates
                   to them, performed by the diff process will remain.
+                  Specifying ! discards unsaved changes made in the temporary
+                  buffers.
 
 ==============================================================================
 SETTINGS                                                   *linediff-settings*
