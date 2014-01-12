@@ -43,16 +43,17 @@ function! s:Linediff(from, to)
 
     call s:PerformDiff()
   else
-    call s:LinediffReset()
+    call s:LinediffReset('!')
     call s:Linediff(a:from, a:to)
   endif
 endfunction
 
-command! LinediffReset call s:LinediffReset()
-function! s:LinediffReset()
+command! -bang LinediffReset call s:LinediffReset(<q-bang>)
+function! s:LinediffReset(bang)
   if s:IsInitialized()
-    call s:differ_one.CloseAndReset()
-    call s:differ_two.CloseAndReset()
+    let force = a:bang == '!'
+    call s:differ_one.CloseAndReset(force)
+    call s:differ_two.CloseAndReset(force)
   endif
 endfunction
 
@@ -70,11 +71,11 @@ endfunction
 function! s:PerformDiff()
   call s:differ_one.CreateDiffBuffer(g:linediff_first_buffer_command)
   autocmd BufUnload <buffer> silent call s:differ_one.Reset()
-  autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset() | endif
+  autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset(0) | endif
 
   call s:differ_two.CreateDiffBuffer(g:linediff_second_buffer_command)
   autocmd BufUnload <buffer> silent call s:differ_two.Reset()
-  autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset() | endif
+  autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset(0) | endif
 
   wincmd t " move to the first diff buffer
 
