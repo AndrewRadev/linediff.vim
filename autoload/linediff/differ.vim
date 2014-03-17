@@ -176,6 +176,7 @@ function! linediff#differ#UpdateOriginalBuffer() dict
   set bufhidden=hide
   call linediff#util#SwitchBuffer(self.original_buffer)
   let saved_original_buffer_view = winsaveview()
+  exe "normal! zR"
   call cursor(self.from, 1)
   exe "normal! ".(self.to - self.from + 1)."dd"
   call append(self.from - 1, new_lines)
