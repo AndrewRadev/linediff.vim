@@ -177,6 +177,7 @@ function! linediff#differ#UpdateOriginalBuffer() dict
   call linediff#util#SwitchBuffer(self.original_buffer)
   let saved_original_buffer_view = winsaveview()
   call cursor(self.from, 1)
+  exe "silent! ".(self.to - self.from + 1)."foldopen!"
   exe "normal! ".(self.to - self.from + 1)."dd"
   call append(self.from - 1, new_lines)
   call winrestview(saved_original_buffer_view)
