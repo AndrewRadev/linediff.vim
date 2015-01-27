@@ -2,7 +2,7 @@ if exists('g:loaded_linediff') || &cp
   finish
 endif
 
-let g:loaded_linediff = '0.1.1' " version number
+let g:loaded_linediff = '0.2.0' " version number
 let s:keepcpo         = &cpo
 set cpo&vim
 
