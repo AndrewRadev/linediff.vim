@@ -12,9 +12,11 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'sign_text':       a:sign_number.'-',
         \ 'is_blank':        1,
         \ 'other_differ':    {},
+        \ 'merge_area':      [],
         \
         \ 'Init':                      function('linediff#differ#Init'),
         \ 'IsBlank':                   function('linediff#differ#IsBlank'),
+        \ 'IsMergeDiff':               function('linediff#differ#IsMergeDiff'),
         \ 'Reset':                     function('linediff#differ#Reset'),
         \ 'CloseAndReset':             function('linediff#differ#CloseAndReset'),
         \ 'Lines':                     function('linediff#differ#Lines'),
@@ -24,7 +26,8 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'CloseDiffBuffer':           function('linediff#differ#CloseDiffBuffer'),
         \ 'UpdateOriginalBuffer':      function('linediff#differ#UpdateOriginalBuffer'),
         \ 'PossiblyUpdateOtherDiffer': function('linediff#differ#PossiblyUpdateOtherDiffer'),
-        \ 'SetupSigns':                function('linediff#differ#SetupSigns')
+        \ 'SetupSigns':                function('linediff#differ#SetupSigns'),
+        \ 'ReplaceMerge':              function('linediff#differ#ReplaceMerge'),
         \ }
 
   exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
@@ -34,11 +37,15 @@ endfunction
 
 " Sets up the Differ with data from the argument list and from the current
 " file.
-function! linediff#differ#Init(from, to) dict
+function! linediff#differ#Init(from, to, options) dict
   let self.original_buffer = bufnr('%')
   let self.filetype        = &filetype
   let self.from            = a:from
   let self.to              = a:to
+
+  if has_key(a:options, 'merge_area')
+    let self.merge_area = a:options.merge_area
+  endif
 
   call self.SetupSigns()
 
@@ -64,6 +71,7 @@ function! linediff#differ#Reset() dict
   exe "sign unplace ".self.sign_number."2"
 
   let self.is_blank = 1
+  let self.merge_area = []
 endfunction
 
 " Closes the diff buffer and resets. The two actions are separate to avoid
@@ -213,4 +221,13 @@ function! linediff#differ#PossiblyUpdateOtherDiffer(delta) dict
 
     call other.SetupSigns()
   endif
+endfunction
+
+" Was this buffer created from a merge area?
+function! linediff#differ#IsMergeDiff() dict
+  return !empty(self.merge_area)
+endfunction
+
+" Replace the saved merge area with the contents of this buffer
+function! linediff#differ#ReplaceMerge() dict
 endfunction

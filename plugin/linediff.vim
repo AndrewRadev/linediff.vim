@@ -33,19 +33,83 @@ function! s:Init()
 endfunction
 
 command! -range Linediff call s:Linediff(<line1>, <line2>)
-function! s:Linediff(from, to)
+function! s:Linediff(from, to, ...)
+  if a:0 > 0
+    let options = a:1
+  else
+    let options = {}
+  endif
+
   call s:Init()
 
   if s:differ_one.IsBlank()
-    call s:differ_one.Init(a:from, a:to)
+    call s:differ_one.Init(a:from, a:to, options)
   elseif s:differ_two.IsBlank()
-    call s:differ_two.Init(a:from, a:to)
+    call s:differ_two.Init(a:from, a:to, options)
 
     call s:PerformDiff()
   else
     call s:LinediffReset('!')
-    call s:Linediff(a:from, a:to)
+    call s:Linediff(a:from, a:to, options)
   endif
+endfunction
+
+command! LinediffMerge call s:LinediffMerge()
+function! s:LinediffMerge()
+  let areas = s:FindMergeMarkers()
+
+  if empty(areas)
+    echomsg "Couldn't find merge markers around cursor"
+    return
+  endif
+
+  let [top_area, bottom_area] = areas
+
+  let merge_range = [top_area[0] - 1, bottom_area[1] + 1]
+
+  call s:Linediff(top_area[0],    top_area[1],    {'merge': merge_range})
+  call s:Linediff(bottom_area[0], bottom_area[1], {'merge': merge_range})
+endfunction
+
+command! LinediffPick call s:LinediffPick()
+function! s:LinediffPick()
+  if !exists('b:differ')
+    echomsg "Not in a Linediff diff buffer, nothing to do"
+    return 0
+  endif
+
+  if !b:differ.IsMergeDiff()
+    echomsg "Linediff buffer not generated from :LinediffMerge, nothing to do"
+    return 0
+  endif
+
+  call b:differ.ReplaceMerge()
+  call s:LinediffReset()
+endfunction
+
+function! s:FindMergeMarkers()
+  let view = winsaveview()
+
+  if search('^<<<<<<<', 'cbW') <= 0
+    return []
+  endif
+  let start_marker = line('.')
+  call winrestview(view)
+
+  if search('^>>>>>>>', 'cW') <= 0
+    return []
+  endif
+  let end_marker = line('.')
+
+  if search('^=======', 'cbW') <= 0
+    return []
+  endif
+  let middle_marker = line('.')
+
+  return [
+        \   [start_marker + 1, middle_marker - 1],
+        \   [middle_marker + 1, end_marker - 1],
+        \ ]
 endfunction
 
 command! -bang LinediffReset call s:LinediffReset(<q-bang>)
