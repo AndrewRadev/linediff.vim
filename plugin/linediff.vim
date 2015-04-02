@@ -23,7 +23,7 @@ if !exists('g:linediff_second_buffer_command')
   let g:linediff_second_buffer_command = 'rightbelow vertical new'
 endif
 
-command! -range Linediff call linediff#Linediff(<line1>, <line2>)
-command! -bang LinediffReset call linediff#LinediffReset(<q-bang>)
+command! -range Linediff      call linediff#Linediff(<line1>, <line2>)
+command! -bang  LinediffReset call linediff#LinediffReset(<q-bang>)
 
 let &cpo = s:keepcpo
