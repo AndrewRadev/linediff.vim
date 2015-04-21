@@ -12,7 +12,7 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'sign_text':       a:sign_number.'-',
         \ 'is_blank':        1,
         \ 'other_differ':    {},
-        \ 'merge_area':      [],
+        \ 'is_merge':        0,
         \
         \ 'Init':                      function('linediff#differ#Init'),
         \ 'IsBlank':                   function('linediff#differ#IsBlank'),
@@ -43,8 +43,8 @@ function! linediff#differ#Init(from, to, options) dict
   let self.from            = a:from
   let self.to              = a:to
 
-  if has_key(a:options, 'merge_area')
-    let self.merge_area = a:options.merge_area
+  if has_key(a:options, 'is_merge')
+    let self.is_merge = a:options.is_merge
   endif
 
   call self.SetupSigns()
@@ -71,7 +71,7 @@ function! linediff#differ#Reset() dict
   exe "sign unplace ".self.sign_number."2"
 
   let self.is_blank = 1
-  let self.merge_area = []
+  let self.is_merge = 0
 endfunction
 
 " Closes the diff buffer and resets. The two actions are separate to avoid
@@ -225,9 +225,22 @@ endfunction
 
 " Was this buffer created from a merge area?
 function! linediff#differ#IsMergeDiff() dict
-  return !empty(self.merge_area)
+  return self.is_merge
 endfunction
 
 " Replace the saved merge area with the contents of this buffer
 function! linediff#differ#ReplaceMerge() dict
+  " Save real buffer range
+  let [real_from, real_to] = [self.from, self.to]
+
+  try
+    " Set the buffer range to the merge area in order to replace the whole thing
+    let self.from = min([self.from, self.other_differ.from]) - 1
+    let self.to   = max([self.to, self.other_differ.to]) + 1
+
+    call self.UpdateOriginalBuffer()
+  finally
+    " Restore the real buffer range
+    let [self.from, self.to] = [real_from, real_to]
+  endtry
 endfunction

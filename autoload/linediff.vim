@@ -30,10 +30,8 @@ function! linediff#LinediffMerge()
 
   let [top_area, bottom_area] = areas
 
-  let merge_range = [top_area[0] - 1, bottom_area[1] + 1]
-
-  call linediff#Linediff(top_area[0],    top_area[1],    {'merge': merge_range})
-  call linediff#Linediff(bottom_area[0], bottom_area[1], {'merge': merge_range})
+  call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1})
+  call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1})
 endfunction
 
 function! linediff#LinediffPick()
@@ -47,8 +45,8 @@ function! linediff#LinediffPick()
     return 0
   endif
 
-  call b:differ.ReplaceMerge()
-  call linediff#LinediffReset()
+  silent call b:differ.ReplaceMerge()
+  call linediff#LinediffReset('!')
 endfunction
 
 " The closing logic is a bit roundabout, since changing a buffer in a
