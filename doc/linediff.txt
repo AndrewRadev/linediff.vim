@@ -72,6 +72,13 @@ If you're using a custom statusline and it contains "%f" (the current file's
 name), that token will simply be substituted by the above data. Otherwise, the
 entire statusline will be set to a custom one.
 
+If you'd like to do some additional setup on the buffers, you can hook into
+the `LinediffBufferReady` User autocommand. For instance, in order to stop the
+linediff with a `q`, try:
+>
+    autocmd User LinediffBufferReady nnoremap <buffer> q :LinediffReset<cr>
+<
+
 ==============================================================================
 COMMANDS                                                   *linediff-commands*
 
