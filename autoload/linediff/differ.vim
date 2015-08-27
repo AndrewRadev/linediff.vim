@@ -109,7 +109,9 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
 
   diffthis
 
-  doautocmd User LinediffBufferReady
+  if exists('#LinediffBufferReady')
+    doautocmd User LinediffBufferReady
+  endif
 endfunction
 
 " Indents the current buffer content so that format can be ignored.
