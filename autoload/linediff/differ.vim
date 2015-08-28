@@ -109,7 +109,7 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
 
   diffthis
 
-  if exists('#LinediffBufferReady')
+  if exists('#User#LinediffBufferReady')
     doautocmd User LinediffBufferReady
   endif
 endfunction
