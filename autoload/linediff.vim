@@ -35,7 +35,11 @@ function! s:PerformDiff()
   autocmd BufUnload <buffer> silent call s:differ_two.Reset()
   autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset(0) | endif
 
-  wincmd t " move to the first diff buffer
+  let l:swb_old = &switchbuf
+  set switchbuf=useopen,usetab
+  " Move to the first diff buffer
+  execute 'sbuffer' s:differ_one.diff_buffer
+  let &switchbuf = l:swb_old
 
   let s:differ_one.other_differ = s:differ_two
   let s:differ_two.other_differ = s:differ_one
