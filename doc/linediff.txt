@@ -164,6 +164,23 @@ You can control the positioning with judicious use of |:rightbelow| and
 |:leftabove|. If you omit these commands, the view will simply follow your
 default settings when opening new splits.
 
+                                                          *g:linediff_diffopt*
+>
+    let g:linediff_diffopt = 'filler,iwhite'
+<
+Default value: "builtin"
+
+This variable contains the 'diffopt' to set while performing a linediff. You
+may want to have a different value of that setting for linediff than you do
+for other kinds of diffing.
+
+The special value of "builtin" simply doesn't touch the setting at all.
+
+Note that the 'diffopt' setting is global, which means that it will simply be
+set globally and then reverted back to its previous setting once the linediff
+is stopped.
+
+
 ==============================================================================
 INTERNALS                                                 *linediff-internals*
 

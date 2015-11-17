@@ -64,6 +64,11 @@ function! linediff#differ#Reset() dict
   exe "sign unplace ".self.sign_number."2"
 
   let self.is_blank = 1
+
+  if exists('g:linediff_original_diffopt')
+    let &diffopt = g:linediff_original_diffopt
+    unlet g:linediff_original_diffopt
+  endif
 endfunction
 
 " Closes the diff buffer and resets. The two actions are separate to avoid

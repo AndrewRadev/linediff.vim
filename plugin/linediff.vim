@@ -23,6 +23,10 @@ if !exists('g:linediff_second_buffer_command')
   let g:linediff_second_buffer_command = 'rightbelow vertical new'
 endif
 
+if !exists('g:linediff_diffopt')
+  let g:linediff_diffopt = 'builtin'
+endif
+
 command! -range Linediff      call linediff#Linediff(<line1>, <line2>)
 command! -bang  LinediffReset call linediff#LinediffReset(<q-bang>)
 

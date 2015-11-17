@@ -27,6 +27,11 @@ endfunction
 " destroy this one as well and close the window.
 "
 function! s:PerformDiff()
+  if g:linediff_diffopt != 'builtin'
+    let g:linediff_original_diffopt = &diffopt
+    let &diffopt = g:linediff_diffopt
+  endif
+
   call s:differ_one.CreateDiffBuffer(g:linediff_first_buffer_command)
   autocmd BufUnload <buffer> silent call s:differ_one.Reset()
   autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset(0) | endif
