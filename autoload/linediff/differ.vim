@@ -2,16 +2,17 @@
 " with data, `Init(from, to)` needs to be invoked on that object.
 function! linediff#differ#New(sign_name, sign_number)
   let differ = {
-        \ 'original_buffer': -1,
-        \ 'diff_buffer':     -1,
-        \ 'filetype':        '',
-        \ 'from':            -1,
-        \ 'to':              -1,
-        \ 'sign_name':       a:sign_name,
-        \ 'sign_number':     a:sign_number,
-        \ 'sign_text':       a:sign_number.'-',
-        \ 'is_blank':        1,
-        \ 'other_differ':    {},
+        \ 'original_buffer':    -1,
+        \ 'original_bufhidden': '',
+        \ 'diff_buffer':        -1,
+        \ 'filetype':           '',
+        \ 'from':               -1,
+        \ 'to':                 -1,
+        \ 'sign_name':          a:sign_name,
+        \ 'sign_number':        a:sign_number,
+        \ 'sign_text':          a:sign_number.'-',
+        \ 'is_blank':           1,
+        \ 'other_differ':       {},
         \
         \ 'Init':                      function('linediff#differ#Init'),
         \ 'IsBlank':                   function('linediff#differ#IsBlank'),
@@ -35,12 +36,16 @@ endfunction
 " Sets up the Differ with data from the argument list and from the current
 " file.
 function! linediff#differ#Init(from, to) dict
-  let self.original_buffer = bufnr('%')
-  let self.filetype        = &filetype
-  let self.from            = a:from
-  let self.to              = a:to
+  let self.original_buffer    = bufnr('%')
+  let self.original_bufhidden = &bufhidden
+
+  let self.filetype = &filetype
+  let self.from     = a:from
+  let self.to       = a:to
 
   call self.SetupSigns()
+
+  set bufhidden=hide
 
   let self.is_blank = 0
 endfunction
@@ -53,12 +58,15 @@ endfunction
 " Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
 " make it usable again.
 function! linediff#differ#Reset() dict
-  let self.original_buffer = -1
-  let self.diff_buffer     = -1
-  let self.filetype        = ''
-  let self.from            = -1
-  let self.to              = -1
-  let self.other_differ    = {}
+  let &bufhidden = self.original_bufhidden
+
+  let self.original_buffer    = -1
+  let self.original_bufhidden = ''
+  let self.diff_buffer        = -1
+  let self.filetype           = ''
+  let self.from               = -1
+  let self.to                 = -1
+  let self.other_differ       = {}
 
   exe "sign unplace ".self.sign_number."1"
   exe "sign unplace ".self.sign_number."2"
