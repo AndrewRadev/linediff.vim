@@ -207,13 +207,6 @@ horribly bad will happen, it just won't work as you'd hope to. I don't feel
 like it's a very important use case, but if someone requests sensible
 behaviour in that case, I should be able to get it working.
 
-If you close any of the linediffed buffers, they won't be updated properly. If
-the 'hidden' option is set, this won't be a problem, since the buffers will be
-hidden when they're closed, and will still be accessible. If it isn't set, the
-buffers will be gone and the plugin won't be able to find them. Consider
-either keeping the original buffers open (in a split or something), or putting
-`set hidden` in your vim configuration.
-
 To report any other issues or offer suggestions, use the bugtracker of the
 github project at http://github.com/AndrewRadev/linediff.vim/issues
 
