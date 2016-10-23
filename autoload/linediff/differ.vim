@@ -58,7 +58,7 @@ endfunction
 " Resets the differ to the blank state. Invoke `Init(from, to)` on it later to
 " make it usable again.
 function! linediff#differ#Reset() dict
-  let &bufhidden = self.original_bufhidden
+  call setbufvar(self.original_buffer, '&bufhidden', self.original_bufhidden)
 
   let self.original_buffer    = -1
   let self.original_bufhidden = ''
