@@ -110,6 +110,13 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
 
     setlocal buftype=acwrite
     setlocal bufhidden=wipe
+
+    " Clear undo state after initial setup
+    let old_undolevels = &undolevels
+    set undolevels=-1
+    exe "normal! a \<BS>\<Esc>"
+    let &undolevels = old_undolevels
+    unlet old_undolevels
   endif
 
   let self.diff_buffer = bufnr('%')
