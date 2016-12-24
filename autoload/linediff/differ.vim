@@ -182,8 +182,10 @@ function! linediff#differ#SetupSigns() dict
   exe "sign unplace ".self.sign_number."1"
   exe "sign unplace ".self.sign_number."2"
 
-  exe printf("sign place %d1 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.from, self.original_buffer)
-  exe printf("sign place %d2 name=%s line=%d buffer=%d", self.sign_number, self.sign_name, self.to,   self.original_buffer)
+  silent! exe printf("sign place %d1 name=%s line=%d buffer=%d",
+        \ self.sign_number, self.sign_name, self.from, self.original_buffer)
+  silent! exe printf("sign place %d2 name=%s line=%d buffer=%d",
+        \ self.sign_number, self.sign_name, self.to, self.original_buffer)
 endfunction
 
 " Updates the original buffer after saving the temporary one. It might also
