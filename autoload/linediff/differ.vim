@@ -99,12 +99,8 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
 
   if g:linediff_buffer_type == 'tempfile'
     let temp_file = tempname()
-
+    call writefile(lines, temp_file)
     silent exe a:edit_command . " " . temp_file
-    call append(0, lines)
-    silent $delete _
-
-    set nomodified
     normal! gg
   else " g:linediff_buffer_type == 'scratch'
     silent exe a:edit_command
