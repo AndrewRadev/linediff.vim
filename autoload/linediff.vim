@@ -30,8 +30,8 @@ function! linediff#LinediffMerge()
 
   let [top_area, bottom_area] = areas
 
-  call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1})
-  call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1})
+  call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1, 'label': top_area[2]})
+  call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1, 'label': bottom_area[2]})
 endfunction
 
 function! linediff#LinediffPick()
@@ -77,12 +77,14 @@ function! s:FindMergeMarkers()
     return []
   endif
   let start_marker = line('.')
+  let start_label = matchstr(getline(start_marker), '^<<<<<<<\s*\zs.*')
   call winrestview(view)
 
   if search('^>>>>>>>', 'cW') <= 0
     return []
   endif
   let end_marker = line('.')
+  let end_label = matchstr(getline(end_marker), '^>>>>>>>\s*\zs.*')
 
   if search('^=======', 'cbW') <= 0
     return []
@@ -90,7 +92,7 @@ function! s:FindMergeMarkers()
   let middle_marker = line('.')
 
   return [
-        \   [start_marker + 1, middle_marker - 1],
-        \   [middle_marker + 1, end_marker - 1],
+        \   [start_marker + 1, middle_marker - 1, start_label],
+        \   [middle_marker + 1, end_marker - 1, end_label],
         \ ]
 endfunction

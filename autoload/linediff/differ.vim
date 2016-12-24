@@ -13,6 +13,7 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'is_blank':        1,
         \ 'other_differ':    {},
         \ 'is_merge':        0,
+        \ 'label':           '',
         \
         \ 'Init':                      function('linediff#differ#Init'),
         \ 'IsBlank':                   function('linediff#differ#IsBlank'),
@@ -47,6 +48,10 @@ function! linediff#differ#Init(from, to, options) dict
     let self.is_merge = a:options.is_merge
   endif
 
+  if has_key(a:options, 'label')
+    let self.label = a:options.label
+  endif
+
   call self.SetupSigns()
 
   let self.is_blank = 0
@@ -72,6 +77,7 @@ function! linediff#differ#Reset() dict
 
   let self.is_blank = 1
   let self.is_merge = 0
+  let self.label    = ''
 endfunction
 
 " Closes the diff buffer and resets. The two actions are separate to avoid
@@ -133,10 +139,23 @@ endfunction
 function! linediff#differ#SetupDiffBuffer() dict
   let b:differ = self
 
+  if self.label == ''
+    let label = ''
+  else
+    let label = ' ('.self.label.')'
+  endif
+
+  let description = printf('[%s:%s-%s%s]',
+        \ bufname(self.original_buffer),
+        \ self.from,
+        \ self.to,
+        \ label)
+
   if g:linediff_buffer_type == 'tempfile'
-    let statusline = printf('[%s:%%{b:differ.from}-%%{b:differ.to}]', bufname(self.original_buffer))
     if &statusline =~ '%[fF]'
-      let statusline = substitute(&statusline, '%[fF]', escape(statusline, '\'), '')
+      let statusline = substitute(&statusline, '%[fF]', escape(description, '\'), '')
+    else
+      let statusline = description
     endif
     let &l:statusline = statusline
     exe "set filetype=" . self.filetype
@@ -144,8 +163,7 @@ function! linediff#differ#SetupDiffBuffer() dict
 
     autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
   else " g:linediff_buffer_type == 'scratch'
-    let description = printf('[%s:%s-%s]', bufname(self.original_buffer), self.from, self.to)
-    silent exec 'keepalt file ' . escape(description, '[')
+    silent exec 'keepalt file ' . escape(description, '[ ')
     exe "set filetype=" . self.filetype
     set nomodified
 
