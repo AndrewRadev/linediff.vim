@@ -105,18 +105,19 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
   else " g:linediff_buffer_type == 'scratch'
     silent exe a:edit_command
 
+    if v:version > 704 || v:version == 704 && has("patch73")
+      setlocal undolevels=-1
+    endif
+
     call append(0, lines)
     silent $delete _
 
+    if v:version > 704 || v:version == 704 && has("patch73")
+      setlocal undolevels<
+    endif
+
     setlocal buftype=acwrite
     setlocal bufhidden=wipe
-
-    " Clear undo state after initial setup
-    let old_undolevels = &undolevels
-    set undolevels=-1
-    exe "normal! a \<BS>\<Esc>"
-    let &undolevels = old_undolevels
-    unlet old_undolevels
   endif
 
   let self.diff_buffer = bufnr('%')
