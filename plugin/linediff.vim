@@ -27,7 +27,9 @@ if !exists('g:linediff_diffopt')
   let g:linediff_diffopt = 'builtin'
 endif
 
-command! -range Linediff      call linediff#Linediff(<line1>, <line2>)
+command! -range Linediff      call linediff#Linediff(<line1>, <line2>, {})
 command! -bang  LinediffReset call linediff#LinediffReset(<q-bang>)
+command!        LinediffMerge call linediff#LinediffMerge()
+command!        LinediffPick  call linediff#LinediffPick()
 
 let &cpo = s:keepcpo
