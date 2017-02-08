@@ -19,8 +19,8 @@ if !exists('g:linediff_first_buffer_command')
   let g:linediff_first_buffer_command = 'tabnew'
 endif
 
-if !exists('g:linediff_second_buffer_command')
-  let g:linediff_second_buffer_command = 'rightbelow vertical new'
+if !exists('g:linediff_further_buffer_command')
+  let g:linediff_further_buffer_command = 'rightbelow vertical new'
 endif
 
 if !exists('g:linediff_diffopt')
@@ -28,6 +28,9 @@ if !exists('g:linediff_diffopt')
 endif
 
 command! -range Linediff      call linediff#Linediff(<line1>, <line2>, {})
+command! -range LinediffAdd   call linediff#LinediffAdd(<line1>, <line2>, {})
+command! -range LinediffLast  call linediff#LinediffLast(<line1>, <line2>, {})
+command!        LinediffShow  call linediff#LinediffShow()
 command! -bang  LinediffReset call linediff#LinediffReset(<q-bang>)
 command!        LinediffMerge call linediff#LinediffMerge()
 command!        LinediffPick  call linediff#LinediffPick()

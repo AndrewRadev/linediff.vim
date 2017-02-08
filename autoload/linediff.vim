@@ -1,23 +1,42 @@
-let s:differ_one = linediff#differ#New('linediff_one', 1)
-let s:differ_two = linediff#differ#New('linediff_two', 2)
+let s:differ = []
+for i in range(0,7)
+  call add(s:differ, linediff#differ#New('linediff'+string(i+1), i+1))
+endfor
 
 function! linediff#Linediff(from, to, options)
-  if s:differ_one.IsBlank()
-    call s:differ_one.Init(a:from, a:to, a:options)
-  elseif s:differ_two.IsBlank()
-    call s:differ_two.Init(a:from, a:to, a:options)
-
-    call s:PerformDiff()
-  else
+  if !s:differ[1].IsBlank()
     call linediff#LinediffReset('!')
-    call linediff#Linediff(a:from, a:to, a:options)
   endif
+  call linediff#LinediffAdd(a:from, a:to, a:options)
+  if !s:differ[1].IsBlank()
+    call s:PerformDiff()
+  endif
+endfunction
+
+function! linediff#LinediffAdd(from, to, options)
+  for dfr in s:differ
+    if dfr.IsBlank()
+      call dfr.Init(a:from, a:to, a:options)
+      return
+    endif
+  endfor
+  echoerr "It's not possible to add more than 8 blocks to Linediff!"
+endfunction
+
+function! linediff#LinediffLast(from, to, options)
+  call linediff#LinediffAdd(a:from, a:to, a:options)
+  call s:PerformDiff()
+endfunction
+
+function! linediff#LinediffShow()
+  call s:PerformDiff()
 endfunction
 
 function! linediff#LinediffReset(bang)
   let force = a:bang == '!'
-  call s:differ_one.CloseAndReset(force)
-  call s:differ_two.CloseAndReset(force)
+  for dfr in s:differ
+    call dfr.CloseAndReset(force)
+  endfor
 endfunction
 
 function! linediff#LinediffMerge()
@@ -29,9 +48,10 @@ function! linediff#LinediffMerge()
   endif
 
   let [top_area, bottom_area] = areas
+  let [mfrom, mto] = [top_area[0]-1, bottom_area[1]+1]
 
-  call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1, 'label': top_area[2]})
-  call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1, 'label': bottom_area[2]})
+  call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': top_area[2]})
+  call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': bottom_area[2]})
 endfunction
 
 function! linediff#LinediffPick()
@@ -61,22 +81,24 @@ function! s:PerformDiff()
     let &diffopt = g:linediff_diffopt
   endif
 
-  call s:differ_one.CreateDiffBuffer(g:linediff_first_buffer_command)
-  autocmd BufUnload <buffer> silent call s:differ_one.Reset()
-  autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset(0) | endif
+  call s:differ[0].CreateDiffBuffer(g:linediff_first_buffer_command)
+  autocmd BufUnload <buffer> silent call linediff#LinediffReset('')
 
-  call s:differ_two.CreateDiffBuffer(g:linediff_second_buffer_command)
-  autocmd BufUnload <buffer> silent call s:differ_two.Reset()
-  autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset(0) | endif
+  for dfr in s:differ[1:]
+    if dfr.IsBlank() | break | endif
+    call dfr.CreateDiffBuffer(g:linediff_further_buffer_command)
+    autocmd BufUnload <buffer> silent call linediff#LinediffReset('')
+  endfor
 
   let l:swb_old = &switchbuf
   set switchbuf=useopen,usetab
   " Move to the first diff buffer
-  execute 'sbuffer' s:differ_one.diff_buffer
+  execute 'sbuffer' s:differ[0].diff_buffer
   let &switchbuf = l:swb_old
 
-  let s:differ_one.other_differ = s:differ_two
-  let s:differ_two.other_differ = s:differ_one
+  for dfr in s:differ
+    let dfr.other_differs = s:differ
+  endfor
 endfunction
 
 function! s:FindMergeMarkers()

@@ -139,26 +139,26 @@ display information on the proxy is by hacking the statusline, which may cause
 issues and can't work reliably on all statuslines.
 
                                             *g:linediff_first_buffer_command*
-                                            *g:linediff_second_buffer_command*
+                                            *g:linediff_further_buffer_command*
 >
     let g:linediff_first_buffer_command  = 'new'
-    let g:linediff_second_buffer_command = 'vertical new'
+    let g:linediff_further_buffer_command = 'vertical new'
 <
 
 Default values: "tabnew" and "rightbelow vertical new", respectively.
 
-These variables control what commands are used to open the two temporary
-buffers. By default, the first one will open a blank new tab, and the second
-one will split it vertically, from the right. This should ensure a pretty
-sensible setup.
+These variables control what commands are used to open the temporary
+buffers. By default, the first one will open a blank new tab, and the
+subsequent ones will split it vertically, from the right.
+This should ensure a pretty sensible setup.
 
 As an example, you can set them like so:
 >
     let g:linediff_first_buffer_command  = 'leftabove new'
-    let g:linediff_second_buffer_command = 'rightbelow vertical new'
+    let g:linediff_further_buffer_command = 'rightbelow vertical new'
 <
 With this, the buffers will be positioned in a split above the current buffer,
-the first one on the left, and the second one on the right.
+the first one on the left, and the subsequent ones on the right.
 
 You can control the positioning with judicious use of |:rightbelow| and
 |:leftabove|. If you omit these commands, the view will simply follow your
