@@ -34,6 +34,9 @@ endfunction
 
 function! linediff#LinediffReset(bang)
   let force = a:bang == '!'
+  augroup LinediffAug
+  autocmd!
+  augroup END
   for dfr in s:differ
     call dfr.CloseAndReset(force)
   endfor
@@ -48,7 +51,7 @@ function! linediff#LinediffMerge()
   endif
 
   let [top_area, bottom_area] = areas
-  let [mfrom, mto] = [top_area[0]-1, bottom_area[1]+1]
+  let [mfrom, mto] = [top_area[0] - 1, bottom_area[1] + 1]
 
   call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': top_area[2]})
   call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': bottom_area[2]})
@@ -81,6 +84,7 @@ function! s:PerformDiff()
     let &diffopt = g:linediff_diffopt
   endif
 
+  augroup LinediffAug
   call s:differ[0].CreateDiffBuffer(g:linediff_first_buffer_command)
   autocmd BufUnload <buffer> silent call linediff#LinediffReset('')
 
@@ -89,6 +93,7 @@ function! s:PerformDiff()
     call dfr.CreateDiffBuffer(g:linediff_further_buffer_command)
     autocmd BufUnload <buffer> silent call linediff#LinediffReset('')
   endfor
+  augroup END
 
   let l:swb_old = &switchbuf
   set switchbuf=useopen,usetab

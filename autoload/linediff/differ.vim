@@ -50,13 +50,11 @@ function! linediff#differ#Init(from, to, options) dict
   let self.from     = a:from
   let self.to       = a:to
 
-  if has_key(a:options, 'is_merge')
-    let self.is_merge = a:options.is_merge
-  endif
-
-  if has_key(a:options, 'label')
-    let self.label = a:options.label
-  endif
+  for k in keys(a:options)
+    if has_key(self, k)
+      let self[k] = a:options[k]
+    endif
+  endfor
 
   call self.SetupSigns()
 
@@ -187,13 +185,13 @@ function! linediff#differ#SetupDiffBuffer() dict
     exe "set filetype=" . self.filetype
     setlocal bufhidden=wipe
 
-    autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
+    autocmd LinediffAug BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
   else " g:linediff_buffer_type == 'scratch'
     silent exec 'keepalt file ' . escape(description, '[ ')
     exe "set filetype=" . self.filetype
     set nomodified
 
-    autocmd BufWriteCmd <buffer> silent call b:differ.UpdateOriginalBuffer()
+    autocmd LinediffAug BufWriteCmd <buffer> silent call b:differ.UpdateOriginalBuffer()
   endif
 endfunction
 
@@ -270,6 +268,9 @@ function! linediff#differ#UpdateOtherDiffer(delta, other) dict
     let a:other.to   = a:other.to   + a:delta
 
     call a:other.SetupSigns()
+  endif
+  if self.is_merge && a:other.is_merge
+    let a:other.merge_to = a:other.merge_to + a:delta
   endif
 endfunction
 
