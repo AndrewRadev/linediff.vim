@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/AndrewRadev/linediff.vim.png?branch=master)](http://travis-ci.org/AndrewRadev/linediff.vim)
+
 The linediff plugin provides a simple command, `:Linediff`, which is used to diff two separate blocks of text.
 
 ![Demo](http://i.andrewradev.com/24f5ad78d6deff0b2492dd011dbca7a9.gif)
