@@ -58,7 +58,7 @@ buffer is updated. Note that this doesn't save the original buffer, just
 performs the change. Saving is something you should do later.
 
 Executing the command |:LinediffReset| will delete the temporary buffers and
-remove the signs.
+remove the signs. A shortcut |q| is also available.
 
 Executing a new |:Linediff| will do the same as |:LinediffReset|, but will
 also initiate a new diff process.

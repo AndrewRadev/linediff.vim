@@ -62,10 +62,12 @@ function! s:PerformDiff()
   endif
 
   call s:differ_one.CreateDiffBuffer(g:linediff_first_buffer_command)
+  nnoremap <silent><buffer> q :call linediff#LinediffReset(0)<CR>
   autocmd BufUnload <buffer> silent call s:differ_one.Reset()
   autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset(0) | endif
 
   call s:differ_two.CreateDiffBuffer(g:linediff_second_buffer_command)
+  nnoremap <silent><buffer> q :call linediff#LinediffReset(0)<CR>
   autocmd BufUnload <buffer> silent call s:differ_two.Reset()
   autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset(0) | endif
 
