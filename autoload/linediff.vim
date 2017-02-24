@@ -50,11 +50,14 @@ function! linediff#LinediffMerge()
     return
   endif
 
-  let [top_area, bottom_area] = areas
+  let [top_area, middle_area, bottom_area] = areas
   let [mfrom, mto] = [top_area[0] - 1, bottom_area[1] + 1]
 
-  call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': top_area[2]})
-  call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': bottom_area[2]})
+  call linediff#LinediffAdd(top_area[0],    top_area[1],    {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': top_area[2]})
+  if middle_area[0] <= middle_area[1]
+    call linediff#LinediffAdd(middle_area[0], middle_area[1], {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': middle_area[2]})
+  endif
+  call linediff#LinediffLast(bottom_area[0], bottom_area[1], {'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto, 'label': bottom_area[2]})
 endfunction
 
 function! linediff#LinediffPick()
@@ -125,10 +128,16 @@ function! s:FindMergeMarkers()
   if search('^=======', 'cbW') <= 0
     return []
   endif
-  let middle_marker = line('.')
+  let other_marker = line('.')
+
+  let base_marker = other_marker
+  if search('^|||||||', 'cbW') > 0
+    let base_marker = line('.')
+  endif
 
   return [
-        \   [start_marker + 1, middle_marker - 1, start_label],
-        \   [middle_marker + 1, end_marker - 1, end_label],
+        \   [start_marker + 1, base_marker - 1, start_label],
+        \   [base_marker + 1, other_marker - 1, "common ancestor"],
+        \   [other_marker + 1, end_marker - 1, end_label],
         \ ]
 endfunction
