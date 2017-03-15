@@ -5,6 +5,7 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'original_buffer':    -1,
         \ 'original_bufhidden': '',
         \ 'diff_buffer':        -1,
+        \ 'index':              -1,
         \ 'filetype':           '',
         \ 'from':               -1,
         \ 'to':                 -1,
@@ -12,7 +13,7 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'sign_number':        a:sign_number,
         \ 'sign_text':          a:sign_number.'-',
         \ 'is_blank':           1,
-        \ 'other_differs':      {},
+        \ 'other_differs':      [],
         \ 'is_merge':           0,
         \ 'merge_from':         -1,
         \ 'merge_to':           -1,
@@ -79,7 +80,7 @@ function! linediff#differ#Reset() dict
   let self.filetype           = ''
   let self.from               = -1
   let self.to                 = -1
-  let self.other_differs      = {}
+  let self.other_differs      = []
 
   exe "sign unplace ".self.sign_number."1"
   exe "sign unplace ".self.sign_number."2"
@@ -111,7 +112,7 @@ endfunction
 
 " Creates the buffer used for the diffing and connects it to this differ
 " object.
-function! linediff#differ#CreateDiffBuffer(edit_command) dict
+function! linediff#differ#CreateDiffBuffer(edit_command, index) dict
   let lines = self.Lines()
 
   if g:linediff_buffer_type == 'tempfile'
@@ -138,6 +139,7 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
   endif
 
   let self.diff_buffer = bufnr('%')
+  let self.index = a:index
   call self.SetupDiffBuffer()
   call self.Indent()
 
@@ -185,13 +187,13 @@ function! linediff#differ#SetupDiffBuffer() dict
     exe "set filetype=" . self.filetype
     setlocal bufhidden=wipe
 
-    autocmd LinediffAug BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
+    autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
   else " g:linediff_buffer_type == 'scratch'
     silent exec 'keepalt file ' . escape(description, '[ ')
     exe "set filetype=" . self.filetype
     set nomodified
 
-    autocmd LinediffAug BufWriteCmd <buffer> silent call b:differ.UpdateOriginalBuffer()
+    autocmd BufWriteCmd <buffer> silent call b:differ.UpdateOriginalBuffer()
   endif
 endfunction
 

@@ -1,10 +1,13 @@
 function! linediff#controller#New()
   let controller = {
         \ 'differs': [],
+        \ 'is_destroying': 0,
         \
-        \ 'Add':           function('linediff#controller#Add'),
-        \ 'CloseAndReset': function('linediff#controller#CloseAndReset'),
-        \ 'PerformDiff':   function('linediff#controller#PerformDiff'),
+        \ 'Add':             function('linediff#controller#Add'),
+        \ 'Destroy':         function('linediff#controller#Destroy'),
+        \ 'StartDestroying': function('linediff#controller#StartDestroying'),
+        \ 'CloseAndReset':   function('linediff#controller#CloseAndReset'),
+        \ 'PerformDiff':     function('linediff#controller#PerformDiff'),
         \ }
 
   for i in range(0,7)
@@ -33,31 +36,49 @@ function! linediff#controller#CloseAndReset(force) dict
   endfor
 endfunction
 
-" The closing logic is a bit roundabout, since changing a buffer in a
-" BufUnload autocommand doesn't seem to work in some Vim versions.
-"
-" The process is: if one other differ was destroyed,
-" let the controller know about it, and it'll handle destroying all the rest
-" upon entering the other differs.
-"
-" TODO: not quite working right now for Vim 7.4.52
-"
 function! linediff#controller#PerformDiff() dict
   if g:linediff_diffopt != 'builtin'
     let g:linediff_original_diffopt = &diffopt
     let &diffopt = g:linediff_diffopt
   endif
 
-  augroup LinediffAug
-    call self.differs[0].CreateDiffBuffer(g:linediff_first_buffer_command)
-    autocmd BufUnload <buffer> silent call linediff#LinediffReset('')
+  " The closing logic is a bit roundabout, since changing a buffer in a
+  " BufUnload autocommand doesn't seem to work in some Vim versions.
+  "
+  " The process is: if one other differ was destroyed,
+  " let the controller know about it, and it'll handle destroying all the rest
+  " upon entering the other differs.
+  "
+  call self.differs[0].CreateDiffBuffer(g:linediff_first_buffer_command, 0)
+  let b:controller = self
 
-    for differ in self.differs[1:]
-      if differ.IsBlank() | break | endif
-      call differ.CreateDiffBuffer(g:linediff_further_buffer_command)
-      autocmd BufUnload <buffer> silent call linediff#LinediffReset('')
-    endfor
-  augroup END
+  " Use getbufvar instead of b:differ, since `%` != `<afile>` in some situations
+  autocmd BufUnload <buffer>
+        \ call getbufvar(expand('<afile>'), 'differ').Reset() |
+        \ call getbufvar(expand('<afile>'), 'controller').StartDestroying()
+  autocmd WinEnter <buffer>
+        \ if b:controller.is_destroying |
+        \   call b:controller.Destroy(0) |
+        \ endif
+
+  for index in range(1, 7)
+    let differ = self.differs[index]
+    if differ.IsBlank()
+      break
+    endif
+
+    call differ.CreateDiffBuffer(g:linediff_further_buffer_command, index)
+    let b:controller = self
+
+    " Use getbufvar instead of b:differ, since `%` != `<afile>` in some situations
+    autocmd BufUnload <buffer>
+          \ call getbufvar(expand('<afile>'), 'differ').Reset() |
+          \ call getbufvar(expand('<afile>'), 'controller').StartDestroying()
+    autocmd WinEnter <buffer>
+          \ if b:controller.is_destroying |
+          \   call b:controller.Destroy(b:differ.index) |
+          \ endif
+  endfor
 
   let l:swb_old = &switchbuf
   set switchbuf=useopen,usetab
@@ -68,4 +89,27 @@ function! linediff#controller#PerformDiff() dict
   for differ in self.differs
     let differ.other_differs = self.differs
   endfor
+endfunction
+
+function! linediff#controller#StartDestroying() dict
+  let self.is_destroying = 1
+endfunction
+
+function! linediff#controller#Destroy(differ_index) dict
+  if !self.is_destroying
+    return
+  endif
+
+  let differ = self.differs[a:differ_index]
+  call differ.CloseAndReset(0)
+
+  " If all differs are blank now, get out of is_destroying mode
+  for differ in self.differs
+    if !differ.IsBlank()
+      " there are still live ones
+      return
+    endif
+  endfor
+
+  let self.is_destroying = 0
 endfunction

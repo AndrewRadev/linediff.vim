@@ -1,4 +1,5 @@
 let s:controller = linediff#controller#New()
+let g:controller = s:controller
 
 function! linediff#Linediff(from, to, options)
   if !s:controller.differs[1].IsBlank()
@@ -27,10 +28,7 @@ endfunction
 
 function! linediff#LinediffReset(bang)
   let force = a:bang == '!'
-  augroup LinediffAug
-  autocmd!
-  augroup END
-  let s:controller.CloseAndReset(force)
+  call s:controller.CloseAndReset(force)
 endfunction
 
 function! linediff#LinediffMerge()
