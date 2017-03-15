@@ -1,5 +1,4 @@
 let s:controller = linediff#controller#New()
-let g:controller = s:controller
 
 function! linediff#Linediff(from, to, options)
   if !s:controller.differs[1].IsBlank()
