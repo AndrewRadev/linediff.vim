@@ -92,7 +92,16 @@ function! linediff#controller#PerformDiff() dict
 endfunction
 
 function! linediff#controller#StartDestroying() dict
-  let self.is_destroying = 1
+  " Only enter is_destroying mode if at least one differ is not blank
+  for differ in self.differs
+    if !differ.IsBlank()
+      let self.is_destroying = 1
+      return
+    endif
+  endfor
+
+  " If we're here, all differs are blank, reset is_destroying mode
+  let self.is_destroying = 0
 endfunction
 
 function! linediff#controller#Destroy(differ_index) dict
