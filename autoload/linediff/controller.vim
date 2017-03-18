@@ -54,8 +54,8 @@ function! linediff#controller#PerformDiff() dict
 
   " Use getbufvar instead of b:differ, since `%` != `<afile>` in some situations
   autocmd BufUnload <buffer>
-        \ call getbufvar(expand('<afile>'), 'differ').Reset() |
-        \ call getbufvar(expand('<afile>'), 'controller').StartDestroying()
+        \ call getbufvar(str2nr(expand('<abuf>')), 'differ').Reset() |
+        \ call getbufvar(str2nr(expand('<abuf>')), 'controller').StartDestroying()
   autocmd WinEnter <buffer>
         \ if b:controller.is_destroying |
         \   call b:controller.Destroy(0) |
@@ -72,8 +72,8 @@ function! linediff#controller#PerformDiff() dict
 
     " Use getbufvar instead of b:differ, since `%` != `<afile>` in some situations
     autocmd BufUnload <buffer>
-          \ call getbufvar(expand('<afile>'), 'differ').Reset() |
-          \ call getbufvar(expand('<afile>'), 'controller').StartDestroying()
+          \ call getbufvar(str2nr(expand('<abuf>')), 'differ').Reset() |
+          \ call getbufvar(str2nr(expand('<abuf>')), 'controller').StartDestroying()
     autocmd WinEnter <buffer>
           \ if b:controller.is_destroying |
           \   call b:controller.Destroy(b:differ.index) |
