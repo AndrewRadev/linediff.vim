@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Multiple lines" do
+describe "Merge conflicts" do
   let(:filename) { 'test.txt' }
 
   before do
