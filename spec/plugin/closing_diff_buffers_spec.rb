@@ -45,10 +45,14 @@ describe "Basic" do
 
   specify "it's possible to close everything at once" do
     vim.normal 'A (changed)'
+    vim.write
     wincmd 'w'
     vim.normal 'A (changed)'
+    vim.write
 
+    # write the original buffer after it's been updated by the diff buffers
     vim.command 'wall'
+
     vim.command 'tabnew'
     vim.command 'tabonly'
 
