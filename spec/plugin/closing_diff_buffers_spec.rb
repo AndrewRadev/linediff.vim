@@ -27,4 +27,34 @@ describe "Basic" do
       second (changed)
     EOF
   end
+
+  specify "original buffer updates upon closing one differ" do
+    vim.normal 'A (changed)'
+    vim.write
+    wincmd 'w'
+    vim.normal 'A (changed)'
+    vim.write
+
+    vim.command 'quit'
+
+    expect(buffer_contents).to eq <<~EOF
+      first (changed)
+      second (changed)
+    EOF
+  end
+
+  specify "it's possible to close everything at once" do
+    vim.normal 'A (changed)'
+    wincmd 'w'
+    vim.normal 'A (changed)'
+
+    vim.command 'wall'
+    vim.command 'tabnew'
+    vim.command 'tabonly'
+
+    expect_file_contents(<<~EOF)
+      first (changed)
+      second (changed)
+    EOF
+  end
 end
