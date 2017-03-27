@@ -285,10 +285,51 @@ order to keep the interface simple. They're located under
 Functions that are general-purpose utilities are placed in
 "autoload/linediff/util.vim".
 
-The two differ objects that are required for the two diff buffers are linked
-to each other out of necessity. If they originate from a single buffer,
-updating one would move the lines of the other, so that one would have to be
-updated as well. Apart from that, they have no interaction.
+All differ objects that are required for the diff buffers are linked to each
+other out of necessity. If they originate from a single buffer, updating one
+would move the lines of the other, so that one would have to be updated as
+well. There's a "controller" object that takes care of the high-level
+interaction between them.
+
+Closing ~
+
+Closing a diff buffer requires closing all diff buffers, because there's no
+longer any need in them existing. Turns out, this is a bit complicated in some
+Vim versions, because of weird connections between buffers, their local
+variables, and autocommands. On Vim 7.4.52, for instance, the plugin was able
+to segfault the editor by double-closing buffers. This is why closing is a bit
+of a complicated process.
+
+These are the different scenarios:
+
+- The user calls |:LinediffReset|: All diff buffers need to be closed. This
+  is the easy process -- just go through all buffers and close them one by
+  one, no dependencies.
+
+- The user closes a single diff buffer: A |BufUnload| autocommand is
+  triggered. That autocommand resets the differ (buffer id, line numbers,
+  etc), bringing it to an inactive state, but doesn't close it, since it's
+  already being closed. It sends a message to the Controller that the
+  destruction process has started.
+
+  From this point on, entering another window with a diff buffer destroys that
+  one as well (the |WinEnter| event is used). On every destruction, the
+  controller checks if all buffers have been cleared which would mean the
+  destruction process is over. This is hacky, but seems to a sensible way to
+  clear out all buffers, lazily, on older Vim versions.
+
+- The user closes all diff buffers with |:tabclose| or by switching to a new
+  tab and executing |:tabonly|: In this case, the |WinEnter| event never gets
+  called, but every closed diff buffer cleans itself up. It also starts the
+  "destroying" process in the Controller, but the Controller checks if there
+  are live differs, and if there aren't any left, removes its "destroying"
+  state, so that the next |WinEnter| wouldn't mess anything up.
+
+In short, the first unloaded buffer starts a destruction process, which means
+entering any diff buffer makes it self-destruct. If the buffers are all closed
+at once, that's fine, because the destruction process stops itself once there
+are no more live differs. Hacky, but seems to work.
+
 
 ==============================================================================
 ISSUES                                                       *linediff-issues*
