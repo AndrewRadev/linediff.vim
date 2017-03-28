@@ -1,3 +1,5 @@
+require 'json'
+
 module Support
   module Vim
     def set_file_contents(string)
@@ -5,8 +7,8 @@ module Support
       vim.edit!(filename)
     end
 
-    def assert_file_contents(string)
-      expect(IO.read(filename).strip).to eq(string)
+    def expect_file_contents(string)
+      expect(IO.read(filename).chomp).to eq(string.chomp)
     end
 
     def wincmd(command)
@@ -15,6 +17,10 @@ module Support
 
     def buffer_contents
       vim.echo(%<join(getbufline('%', 1, '$'), "\n")>) + "\n"
+    end
+
+    def tabpage_buflist
+      JSON.parse(vim.echo(%<tabpagebuflist()>))
     end
   end
 end

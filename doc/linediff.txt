@@ -37,7 +37,7 @@ The plugin provides a simple command, |:Linediff|, which is used to diff two
 separate blocks of text.
 
 A simple example:
-
+>
     def one
       two
     end
@@ -45,7 +45,7 @@ A simple example:
     def two
       three
     end
-
+<
 If we mark the first three lines, starting from "def one", in visual mode, and
 execute the |:Linediff| command, the signs "1-" will be placed at the start
 and at the end of the visual mode's range. Doing the same thing on the bottom
@@ -79,30 +79,121 @@ linediff with a `q`, try:
     autocmd User LinediffBufferReady nnoremap <buffer> q :LinediffReset<cr>
 <
 
+Diffing more than two areas ~
+
+If you'd like to diff more than two areas of code, you can use the
+|:LinediffAdd| command after the first |:Linediff| to mark more areas. You can
+then call |:LinediffShow| to open the diff:
+>
+    :1,2Linediff
+    :3,4LinediffAdd
+    :5,6LinediffAdd
+    :LinediffShow
+<
+This will diff the three specified areas. Alternatively, you can use the
+|:LinediffLast| command to add and show the differ. So, the above code is
+equivalent to:
+>
+    :1,2Linediff
+    :3,4LinediffAdd
+    :5,6LinediffLast
+<
+Note that there's a hard limit of 8 diffs set by Vim, so you can't diff more
+areas than that.
+
+Diffing merges ~
+
+If you have a merge conflict like this one:
+>
+    def one
+    <<<<<<< master
+      "first"
+    =======
+      "second"
+    >>>>>>> branch
+    end
+<
+You can easily start a diff between the two variants of the code by executing
+the |:LinediffMerge| command. You can use the diffed buffers the same way, or,
+you can use |:LinediffPick| to choose one buffer whose contents will replace
+the entire merge conflict. This also works with three-way diffs:
+>
+    def one
+    <<<<<<< master
+      "first"
+    |||||||
+      "second"
+    =======
+      "third"
+    >>>>>>> branch
+    end
+<
+The statuslines of the diff buffers will hold the label of the merge parent
+for convenience.
+
 ==============================================================================
 COMMANDS                                                   *linediff-commands*
 
-                                              *:Linediff*
-:Linediff         The main interface of the plugin. Needs to be executed on a
-                  range of lines, which will be marked with a sign. On the
-                  selection of the second such range, the command will open a
-                  tab with the two ranges in vertically split windows and
-                  perform a diff on them. Saving one of the two buffers will
-                  automatically update the original buffer the text was taken
-                  from.
+                                                                     *:Linediff*
+:[range]Linediff
 
-                  When executed for a third time, a new line diff is
-                  initiated, and the current process is reset, much like the
-                  effect of |LinediffReset| would be.
+The main interface of the plugin. Needs to be executed on a range of lines,
+which will be marked with a sign. On the selection of the second such range,
+the command will open a tab with the two ranges in vertically split windows
+and perform a diff on them. Saving one of the two buffers will automatically
+update the original buffer the text was taken from.
+
+When executed for a third time, a new line diff is initiated, and the current
+process is reset, much like the effect of |LinediffReset| would be.
 
 
-                                              *:LinediffReset*
-:LinediffReset[!] Removes the signs denoting the diffed regions and deletes
-                  the temporary buffers, used for the diff. The original
-                  buffers are untouched by this, which means that any updates
-                  to them, performed by the diff process will remain.
-                  Specifying ! discards unsaved changes made in the temporary
-                  buffers.
+                                                                *:LinediffReset*
+:LinediffReset[!]
+
+Removes the signs denoting the diffed regions and deletes the temporary
+buffers, used for the diff. The original buffers are untouched by this, which
+means that any updates to them, performed by the diff process will remain.
+Specifying ! discards unsaved changes made in the temporary buffers.
+
+
+                                                                  *:LinediffAdd*
+:[range]LinediffAdd
+
+Adds a buffer to be diffed later. This is an interface that allows diffing
+more than two areas. Should be followed by another "Add", or by "Show" or
+"Last" to finish the process of adding areas.
+
+
+                                                                 *:LinediffShow*
+:LinediffShow
+
+Shows the diff between all of the marked areas. This is useful if you've been
+adding areas with |:LinediffAdd| and you're ready to see their diff.
+
+
+                                                                 *:LinediffLast*
+:[range]LinediffLast
+
+Performs a combination of |:LinediffAdd| and |:LinediffShow|. Considers the
+marked area to be the last one added to the diff buffers and opens the diff.
+
+
+                                                                *:LinediffMerge*
+:LinediffMerge
+
+Looks for merge markers around the cursor, takes their contents and renders
+them in a diff. The diff buffers act like normal diff buffers, updating their
+parent buffer, but you can call |:LinediffPick| to pick one of them to replace
+the entire merge conflict area.
+
+
+                                                                 *:LinediffPick*
+:LinediffPick
+
+Only valid after a |:LinediffMerge|, in a diff buffer. Picks the diff buffer
+you're in as the "correct" one to replace the entire merge conflict area in
+the parent buffer.
+
 
 ==============================================================================
 SETTINGS                                                   *linediff-settings*
@@ -139,26 +230,26 @@ display information on the proxy is by hacking the statusline, which may cause
 issues and can't work reliably on all statuslines.
 
                                             *g:linediff_first_buffer_command*
-                                            *g:linediff_second_buffer_command*
+                                            *g:linediff_further_buffer_command*
 >
     let g:linediff_first_buffer_command  = 'new'
-    let g:linediff_second_buffer_command = 'vertical new'
+    let g:linediff_further_buffer_command = 'vertical new'
 <
 
 Default values: "tabnew" and "rightbelow vertical new", respectively.
 
-These variables control what commands are used to open the two temporary
-buffers. By default, the first one will open a blank new tab, and the second
-one will split it vertically, from the right. This should ensure a pretty
-sensible setup.
+These variables control what commands are used to open the temporary
+buffers. By default, the first one will open a blank new tab, and the
+subsequent ones will split it vertically, from the right.
+This should ensure a pretty sensible setup.
 
 As an example, you can set them like so:
 >
     let g:linediff_first_buffer_command  = 'leftabove new'
-    let g:linediff_second_buffer_command = 'rightbelow vertical new'
+    let g:linediff_further_buffer_command = 'rightbelow vertical new'
 <
 With this, the buffers will be positioned in a split above the current buffer,
-the first one on the left, and the second one on the right.
+the first one on the left, and the subsequent ones on the right.
 
 You can control the positioning with judicious use of |:rightbelow| and
 |:leftabove|. If you omit these commands, the view will simply follow your
@@ -194,10 +285,51 @@ order to keep the interface simple. They're located under
 Functions that are general-purpose utilities are placed in
 "autoload/linediff/util.vim".
 
-The two differ objects that are required for the two diff buffers are linked
-to each other out of necessity. If they originate from a single buffer,
-updating one would move the lines of the other, so that one would have to be
-updated as well. Apart from that, they have no interaction.
+All differ objects that are required for the diff buffers are linked to each
+other out of necessity. If they originate from a single buffer, updating one
+would move the lines of the other, so that one would have to be updated as
+well. There's a "controller" object that takes care of the high-level
+interaction between them.
+
+Closing ~
+
+Closing a diff buffer requires closing all diff buffers, because there's no
+longer any need in them existing. Turns out, this is a bit complicated in some
+Vim versions, because of weird connections between buffers, their local
+variables, and autocommands. On Vim 7.4.52, for instance, the plugin was able
+to segfault the editor by double-closing buffers. This is why closing is a bit
+of a complicated process.
+
+These are the different scenarios:
+
+- The user calls |:LinediffReset|: All diff buffers need to be closed. This
+  is the easy process -- just go through all buffers and close them one by
+  one, no dependencies.
+
+- The user closes a single diff buffer: A |BufUnload| autocommand is
+  triggered. That autocommand resets the differ (buffer id, line numbers,
+  etc), bringing it to an inactive state, but doesn't close it, since it's
+  already being closed. It sends a message to the Controller that the
+  destruction process has started.
+
+  From this point on, entering another window with a diff buffer destroys that
+  one as well (the |WinEnter| event is used). On every destruction, the
+  controller checks if all buffers have been cleared which would mean the
+  destruction process is over. This is hacky, but seems to a sensible way to
+  clear out all buffers, lazily, on older Vim versions.
+
+- The user closes all diff buffers with |:tabclose| or by switching to a new
+  tab and executing |:tabonly|: In this case, the |WinEnter| event never gets
+  called, but every closed diff buffer cleans itself up. It also starts the
+  "destroying" process in the Controller, but the Controller checks if there
+  are live differs, and if there aren't any left, removes its "destroying"
+  state, so that the next |WinEnter| wouldn't mess anything up.
+
+In short, the first unloaded buffer starts a destruction process, which means
+entering any diff buffer makes it self-destruct. If the buffers are all closed
+at once, that's fine, because the destruction process stops itself once there
+are no more live differs. Hacky, but seems to work.
+
 
 ==============================================================================
 ISSUES                                                       *linediff-issues*

@@ -1,23 +1,33 @@
-let s:differ_one = linediff#differ#New('linediff_one', 1)
-let s:differ_two = linediff#differ#New('linediff_two', 2)
+let s:controller = linediff#controller#New()
 
 function! linediff#Linediff(from, to, options)
-  if s:differ_one.IsBlank()
-    call s:differ_one.Init(a:from, a:to, a:options)
-  elseif s:differ_two.IsBlank()
-    call s:differ_two.Init(a:from, a:to, a:options)
-
-    call s:PerformDiff()
-  else
+  if !s:controller.differs[1].IsBlank()
     call linediff#LinediffReset('!')
-    call linediff#Linediff(a:from, a:to, a:options)
   endif
+
+  call linediff#LinediffAdd(a:from, a:to, a:options)
+
+  if !s:controller.differs[1].IsBlank()
+    call s:controller.PerformDiff()
+  endif
+endfunction
+
+function! linediff#LinediffAdd(from, to, options)
+  call s:controller.Add(a:from, a:to, a:options)
+endfunction
+
+function! linediff#LinediffLast(from, to, options)
+  call linediff#LinediffAdd(a:from, a:to, a:options)
+  call s:controller.PerformDiff()
+endfunction
+
+function! linediff#LinediffShow()
+  call s:controller.PerformDiff()
 endfunction
 
 function! linediff#LinediffReset(bang)
   let force = a:bang == '!'
-  call s:differ_one.CloseAndReset(force)
-  call s:differ_two.CloseAndReset(force)
+  call s:controller.CloseAndReset(force)
 endfunction
 
 function! linediff#LinediffMerge()
@@ -28,10 +38,25 @@ function! linediff#LinediffMerge()
     return
   endif
 
-  let [top_area, bottom_area] = areas
+  let [top_area, middle_area, bottom_area] = areas
+  let [mfrom, mto] = [top_area[0] - 1, bottom_area[1] + 1]
 
-  call linediff#Linediff(top_area[0],    top_area[1],    {'is_merge': 1, 'label': top_area[2]})
-  call linediff#Linediff(bottom_area[0], bottom_area[1], {'is_merge': 1, 'label': bottom_area[2]})
+  call linediff#LinediffAdd(top_area[0], top_area[1], {
+        \ 'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto,
+        \ 'label': top_area[2]
+        \ })
+
+  if middle_area[0] <= middle_area[1]
+    call linediff#LinediffAdd(middle_area[0], middle_area[1], {
+          \ 'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto,
+          \ 'label': middle_area[2]
+          \ })
+  endif
+
+  call linediff#LinediffLast(bottom_area[0], bottom_area[1], {
+        \ 'is_merge': 1, 'merge_from': mfrom, 'merge_to': mto,
+        \ 'label': bottom_area[2]
+        \ })
 endfunction
 
 function! linediff#LinediffPick()
@@ -47,36 +72,6 @@ function! linediff#LinediffPick()
 
   silent call b:differ.ReplaceMerge()
   call linediff#LinediffReset('!')
-endfunction
-
-" The closing logic is a bit roundabout, since changing a buffer in a
-" BufUnload autocommand doesn't seem to work.
-"
-" The process is: if a window is entered after the other differ was destroyed,
-" destroy this one as well and close the window.
-"
-function! s:PerformDiff()
-  if g:linediff_diffopt != 'builtin'
-    let g:linediff_original_diffopt = &diffopt
-    let &diffopt = g:linediff_diffopt
-  endif
-
-  call s:differ_one.CreateDiffBuffer(g:linediff_first_buffer_command)
-  autocmd BufUnload <buffer> silent call s:differ_one.Reset()
-  autocmd WinEnter <buffer> if s:differ_two.IsBlank() | silent call s:differ_one.CloseAndReset(0) | endif
-
-  call s:differ_two.CreateDiffBuffer(g:linediff_second_buffer_command)
-  autocmd BufUnload <buffer> silent call s:differ_two.Reset()
-  autocmd WinEnter <buffer> if s:differ_one.IsBlank() | silent call s:differ_two.CloseAndReset(0) | endif
-
-  let l:swb_old = &switchbuf
-  set switchbuf=useopen,usetab
-  " Move to the first diff buffer
-  execute 'sbuffer' s:differ_one.diff_buffer
-  let &switchbuf = l:swb_old
-
-  let s:differ_one.other_differ = s:differ_two
-  let s:differ_two.other_differ = s:differ_one
 endfunction
 
 function! s:FindMergeMarkers()
@@ -98,10 +93,16 @@ function! s:FindMergeMarkers()
   if search('^=======', 'cbW') <= 0
     return []
   endif
-  let middle_marker = line('.')
+  let other_marker = line('.')
+
+  let base_marker = other_marker
+  if search('^|||||||', 'cbW') > 0
+    let base_marker = line('.')
+  endif
 
   return [
-        \   [start_marker + 1, middle_marker - 1, start_label],
-        \   [middle_marker + 1, end_marker - 1, end_label],
+        \   [start_marker + 1, base_marker - 1, start_label],
+        \   [base_marker + 1, other_marker - 1, "common ancestor"],
+        \   [other_marker + 1, end_marker - 1, end_label],
         \ ]
 endfunction

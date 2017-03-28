@@ -19,7 +19,7 @@ RSpec.configure do |config|
 
   config.after :each do
     vim.command 'wall'
+    vim.command 'tabnew'
     vim.command 'tabonly'
-    vim.command 'only'
   end
 end

@@ -5,6 +5,7 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'original_buffer':    -1,
         \ 'original_bufhidden': '',
         \ 'diff_buffer':        -1,
+        \ 'index':              -1,
         \ 'filetype':           '',
         \ 'from':               -1,
         \ 'to':                 -1,
@@ -12,8 +13,10 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'sign_number':        a:sign_number,
         \ 'sign_text':          a:sign_number.'-',
         \ 'is_blank':           1,
-        \ 'other_differ':       {},
+        \ 'other_differs':      [],
         \ 'is_merge':           0,
+        \ 'merge_from':         -1,
+        \ 'merge_to':           -1,
         \ 'label':              '',
         \
         \ 'Init':                      function('linediff#differ#Init'),
@@ -27,7 +30,8 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'SetupDiffBuffer':           function('linediff#differ#SetupDiffBuffer'),
         \ 'CloseDiffBuffer':           function('linediff#differ#CloseDiffBuffer'),
         \ 'UpdateOriginalBuffer':      function('linediff#differ#UpdateOriginalBuffer'),
-        \ 'PossiblyUpdateOtherDiffer': function('linediff#differ#PossiblyUpdateOtherDiffer'),
+        \ 'PossiblyUpdateOtherDiffers':function('linediff#differ#PossiblyUpdateOtherDiffers'),
+        \ 'UpdateOtherDiffer':         function('linediff#differ#UpdateOtherDiffer'),
         \ 'SetupSigns':                function('linediff#differ#SetupSigns'),
         \ 'ReplaceMerge':              function('linediff#differ#ReplaceMerge'),
         \ }
@@ -47,13 +51,11 @@ function! linediff#differ#Init(from, to, options) dict
   let self.from     = a:from
   let self.to       = a:to
 
-  if has_key(a:options, 'is_merge')
-    let self.is_merge = a:options.is_merge
-  endif
-
-  if has_key(a:options, 'label')
-    let self.label = a:options.label
-  endif
+  for k in keys(a:options)
+    if has_key(self, k)
+      let self[k] = a:options[k]
+    endif
+  endfor
 
   call self.SetupSigns()
 
@@ -78,13 +80,15 @@ function! linediff#differ#Reset() dict
   let self.filetype           = ''
   let self.from               = -1
   let self.to                 = -1
-  let self.other_differ       = {}
+  let self.other_differs      = []
 
   exe "sign unplace ".self.sign_number."1"
   exe "sign unplace ".self.sign_number."2"
 
   let self.is_blank = 1
   let self.is_merge = 0
+  let self.merge_from = -1
+  let self.merge_to = -1
   let self.label    = ''
 
   if exists('g:linediff_original_diffopt')
@@ -108,7 +112,7 @@ endfunction
 
 " Creates the buffer used for the diffing and connects it to this differ
 " object.
-function! linediff#differ#CreateDiffBuffer(edit_command) dict
+function! linediff#differ#CreateDiffBuffer(edit_command, index) dict
   let lines = self.Lines()
 
   if g:linediff_buffer_type == 'tempfile'
@@ -135,6 +139,7 @@ function! linediff#differ#CreateDiffBuffer(edit_command) dict
   endif
 
   let self.diff_buffer = bufnr('%')
+  let self.index = a:index
   call self.SetupDiffBuffer()
   call self.Indent()
 
@@ -240,7 +245,7 @@ function! linediff#differ#UpdateOriginalBuffer() dict
   call self.SetupDiffBuffer()
   call self.SetupSigns()
 
-  call self.PossiblyUpdateOtherDiffer(new_line_count - line_count)
+  call self.PossiblyUpdateOtherDiffers(new_line_count - line_count)
   call winrestview(saved_diff_buffer_view)
 endfunction
 
@@ -249,16 +254,25 @@ endfunction
 " would result in a line shift.
 "
 " a:delta is the change in the number of lines.
-function! linediff#differ#PossiblyUpdateOtherDiffer(delta) dict
-  let other = self.other_differ
+function! linediff#differ#PossiblyUpdateOtherDiffers(delta) dict
+  if a:delta == 0
+    return
+  endif
+  for other in self.other_differs
+    call self.UpdateOtherDiffer(a:delta, other)
+  endfor
+endfunction
 
-  if self.original_buffer == other.original_buffer
-        \ && self.to <= other.from
-        \ && a:delta != 0
-    let other.from = other.from + a:delta
-    let other.to   = other.to   + a:delta
+function! linediff#differ#UpdateOtherDiffer(delta, other) dict
+  if self.original_buffer == a:other.original_buffer
+        \ && self.to <= a:other.from
+    let a:other.from = a:other.from + a:delta
+    let a:other.to   = a:other.to   + a:delta
 
-    call other.SetupSigns()
+    call a:other.SetupSigns()
+  endif
+  if self.is_merge && a:other.is_merge
+    let a:other.merge_to = a:other.merge_to + a:delta
   endif
 endfunction
 
@@ -274,8 +288,8 @@ function! linediff#differ#ReplaceMerge() dict
 
   try
     " Set the buffer range to the merge area in order to replace the whole thing
-    let self.from = min([self.from, self.other_differ.from]) - 1
-    let self.to   = max([self.to, self.other_differ.to]) + 1
+    let self.from = self.merge_from
+    let self.to   = self.merge_to
 
     call self.UpdateOriginalBuffer()
   finally

@@ -24,4 +24,6 @@ Executing the command `:LinediffReset` will delete the temporary buffers and rem
 
 Executing a new `:Linediff` will do the same as `:LinediffReset`, but will also initiate a new diff process.
 
+For more commands and different workflows, you should read the full documentation with [`:help linediff`](https://github.com/AndrewRadev/linediff.vim/blob/master/doc/linediff.txt)
+
 **Note that you shouldn't linediff two pieces of text that overlap**. Not that anything horribly bad will happen, it just won't work as you'd hope to. I don't feel like it's a very important use case, but if someone requests sensible behaviour in that case, I should be able to get it working.
