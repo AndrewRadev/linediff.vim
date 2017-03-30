@@ -19,21 +19,22 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'merge_to':           -1,
         \ 'label':              '',
         \
-        \ 'Init':                      function('linediff#differ#Init'),
-        \ 'IsBlank':                   function('linediff#differ#IsBlank'),
-        \ 'IsMergeDiff':               function('linediff#differ#IsMergeDiff'),
-        \ 'Reset':                     function('linediff#differ#Reset'),
-        \ 'CloseAndReset':             function('linediff#differ#CloseAndReset'),
-        \ 'Lines':                     function('linediff#differ#Lines'),
-        \ 'Indent':                    function('linediff#differ#Indent'),
-        \ 'CreateDiffBuffer':          function('linediff#differ#CreateDiffBuffer'),
-        \ 'SetupDiffBuffer':           function('linediff#differ#SetupDiffBuffer'),
-        \ 'CloseDiffBuffer':           function('linediff#differ#CloseDiffBuffer'),
-        \ 'UpdateOriginalBuffer':      function('linediff#differ#UpdateOriginalBuffer'),
-        \ 'PossiblyUpdateOtherDiffers':function('linediff#differ#PossiblyUpdateOtherDiffers'),
-        \ 'UpdateOtherDiffer':         function('linediff#differ#UpdateOtherDiffer'),
-        \ 'SetupSigns':                function('linediff#differ#SetupSigns'),
-        \ 'ReplaceMerge':              function('linediff#differ#ReplaceMerge'),
+        \ 'Init':                       function('linediff#differ#Init'),
+        \ 'IsBlank':                    function('linediff#differ#IsBlank'),
+        \ 'IsMergeDiff':                function('linediff#differ#IsMergeDiff'),
+        \ 'Reset':                      function('linediff#differ#Reset'),
+        \ 'CloseAndReset':              function('linediff#differ#CloseAndReset'),
+        \ 'Lines':                      function('linediff#differ#Lines'),
+        \ 'Indent':                     function('linediff#differ#Indent'),
+        \ 'CreateDiffBuffer':           function('linediff#differ#CreateDiffBuffer'),
+        \ 'SetupDiffBuffer':            function('linediff#differ#SetupDiffBuffer'),
+        \ 'SetupUpdateAutocommands':    function('linediff#differ#SetupUpdateAutocommands'),
+        \ 'CloseDiffBuffer':            function('linediff#differ#CloseDiffBuffer'),
+        \ 'UpdateOriginalBuffer':       function('linediff#differ#UpdateOriginalBuffer'),
+        \ 'PossiblyUpdateOtherDiffers': function('linediff#differ#PossiblyUpdateOtherDiffers'),
+        \ 'UpdateOtherDiffer':          function('linediff#differ#UpdateOtherDiffer'),
+        \ 'SetupSigns':                 function('linediff#differ#SetupSigns'),
+        \ 'ReplaceMerge':               function('linediff#differ#ReplaceMerge'),
         \ }
 
   exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
@@ -141,6 +142,7 @@ function! linediff#differ#CreateDiffBuffer(edit_command, index) dict
   let self.diff_buffer = bufnr('%')
   let self.index = a:index
   call self.SetupDiffBuffer()
+  call self.SetupUpdateAutocommands()
   call self.Indent()
 
   diffthis
@@ -186,13 +188,18 @@ function! linediff#differ#SetupDiffBuffer() dict
     let &l:statusline = statusline
     exe "set filetype=" . self.filetype
     setlocal bufhidden=wipe
-
-    autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
   else " g:linediff_buffer_type == 'scratch'
     silent exec 'keepalt file ' . escape(description, '[ ')
     exe "set filetype=" . self.filetype
     set nomodified
+  endif
+endfunction
 
+" Note: should only be called when the buffer is initialized.
+function! linediff#differ#SetupUpdateAutocommands()
+  if g:linediff_buffer_type == 'tempfile'
+    autocmd BufWrite <buffer> silent call b:differ.UpdateOriginalBuffer()
+  else " g:linediff_buffer_type == 'scratch'
     autocmd BufWriteCmd <buffer> silent call b:differ.UpdateOriginalBuffer()
   endif
 endfunction
