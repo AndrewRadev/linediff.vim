@@ -180,12 +180,17 @@ function! linediff#differ#SetupDiffBuffer() dict
         \ label)
 
   if g:linediff_buffer_type == 'tempfile'
-    if &statusline =~ '%[fF]'
-      let statusline = substitute(&statusline, '%[fF]', escape(description, '\'), '')
+    if &statusline[0:1] ==# '%!'
+      " Statusline is a function, and might be replaced dynamically.
+      let b:linediff_description = description
     else
-      let statusline = description
+      if &statusline =~ '%[fF]'
+        let statusline = substitute(&statusline, '%[fF]', escape(description, '\'), '')
+      else
+        let statusline = description
+      endif
+      let &l:statusline = statusline
     endif
-    let &l:statusline = statusline
     exe "set filetype=" . self.filetype
     setlocal bufhidden=wipe
   else " g:linediff_buffer_type == 'scratch'
