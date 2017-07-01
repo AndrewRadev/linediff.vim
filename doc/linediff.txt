@@ -72,6 +72,10 @@ If you're using a custom statusline and it contains "%f" (the current file's
 name), that token will simply be substituted by the above data. Otherwise, the
 entire statusline will be set to a custom one.
 
+If you'd rather the statusline is left untouched, you can set the
+|g:linediff_modify_statusline| setting to 0. You can still access the buffer
+description via `b:differ.description`.
+
 If you'd like to do some additional setup on the buffers, you can hook into
 the `LinediffBufferReady` User autocommand. For instance, in order to stop the
 linediff with a `q`, try:
@@ -270,6 +274,17 @@ The special value of "builtin" simply doesn't touch the setting at all.
 Note that the 'diffopt' setting is global, which means that it will simply be
 set globally and then reverted back to its previous setting once the linediff
 is stopped.
+
+                                                *g:linediff_modify_statusline*
+>
+    let g:linediff_modify_statusline = 0
+<
+Default value: 1
+
+This setting controls whether linediff will attempt to put information about
+the diffed areas in the statusline. It's on by default, but you can set it to
+0 to leave the statusline untouched. You can access the description that would
+have been put there with `b:differ.description`, within the buffer.
 
 
 ==============================================================================

@@ -173,23 +173,26 @@ function! linediff#differ#SetupDiffBuffer() dict
     let label = ' ('.self.label.')'
   endif
 
-  let description = printf('[%s:%s-%s%s]',
+  let self.description = printf('[%s:%s-%s%s]',
         \ bufname(self.original_buffer),
         \ self.from,
         \ self.to,
         \ label)
 
   if g:linediff_buffer_type == 'tempfile'
-    if &statusline =~ '%[fF]'
-      let statusline = substitute(&statusline, '%[fF]', escape(description, '\'), '')
-    else
-      let statusline = description
+    if g:linediff_modify_statusline
+      if &statusline =~ '%[fF]'
+        let statusline = substitute(&statusline, '%[fF]', escape(self.description, '\'), '')
+      else
+        let statusline = self.description
+      endif
+      let &l:statusline = statusline
     endif
-    let &l:statusline = statusline
+
     exe "set filetype=" . self.filetype
     setlocal bufhidden=wipe
   else " g:linediff_buffer_type == 'scratch'
-    silent exec 'keepalt file ' . escape(description, '[ ')
+    silent exec 'keepalt file ' . escape(self.description, '[ ')
     exe "set filetype=" . self.filetype
     set nomodified
   endif
