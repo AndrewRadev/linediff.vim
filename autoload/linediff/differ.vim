@@ -37,7 +37,8 @@ function! linediff#differ#New(sign_name, sign_number)
         \ 'ReplaceMerge':               function('linediff#differ#ReplaceMerge'),
         \ }
 
-  exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=Search"
+  let hl=g:linediff_sign_highlight_group
+  exe "sign define ".differ.sign_name." text=".differ.sign_text." texthl=".hl
 
   return differ
 endfunction
