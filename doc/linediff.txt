@@ -288,12 +288,12 @@ have been put there with `b:differ.description`, within the buffer.
 
                                                 *g:linediff_sign_highlight_group*
 >
-    let g:linediff_sign_highlight_group = "Search"
+    let g:linediff_sign_highlight_group = "DiffChange"
 <
 Default value: "Search"
 
-Name of the 'highlight' group which will be used by 'sign' charactes displayed on
-"gutter".
+Name of the 'highlight' group which will be used by the |:sign| characters
+displayed in the source buffer's "gutter".
 
 
 ==============================================================================

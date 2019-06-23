@@ -35,7 +35,6 @@ if !exists('g:linediff_sign_highlight_group')
   let g:linediff_sign_highlight_group = 'Search'
 endif
 
-
 command! -range Linediff      call linediff#Linediff(<line1>, <line2>, {})
 command! -range LinediffAdd   call linediff#LinediffAdd(<line1>, <line2>, {})
 command! -range LinediffLast  call linediff#LinediffLast(<line1>, <line2>, {})
