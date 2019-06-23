@@ -286,6 +286,15 @@ the diffed areas in the statusline. It's on by default, but you can set it to
 0 to leave the statusline untouched. You can access the description that would
 have been put there with `b:differ.description`, within the buffer.
 
+                                                *g:linediff_sign_highlight_group*
+>
+    let g:linediff_sign_highlight_group = "Search"
+<
+Default value: "Search"
+
+Name of the 'highlight' group which will be used by 'sign' charactes displayed on
+"gutter".
+
 
 ==============================================================================
 INTERNALS                                                 *linediff-internals*
