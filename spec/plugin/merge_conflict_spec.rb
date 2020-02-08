@@ -16,10 +16,10 @@ describe "Merge conflicts" do
       EOF
 
       vim.search 'first'
-      vim.command 'LinediffMerge'
     end
 
     specify "change and pick first buffer" do
+      vim.command 'LinediffMerge'
       vim.normal 'o  "change"'
       vim.write
 
@@ -34,6 +34,7 @@ describe "Merge conflicts" do
     end
 
     specify "change and pick second buffer" do
+      vim.command 'LinediffMerge'
       wincmd 'w'
       vim.normal 'o  "change"'
       vim.write
@@ -44,6 +45,17 @@ describe "Merge conflicts" do
       def one
         "second"
         "change"
+      end
+      EOF
+    end
+
+    specify "pick second buffer directly" do
+      vim.search 'second'
+      vim.command 'LinediffPick'
+
+      expect(buffer_contents).to eq <<~EOF
+      def one
+        "second"
       end
       EOF
     end
@@ -64,10 +76,10 @@ describe "Merge conflicts" do
       EOF
 
       vim.search 'first'
-      vim.command 'LinediffMerge'
     end
 
     specify "change and pick first buffer" do
+      vim.command 'LinediffMerge'
       vim.normal 'o  "change"'
       vim.write
 
@@ -82,6 +94,7 @@ describe "Merge conflicts" do
     end
 
     specify "change and pick second buffer" do
+      vim.command 'LinediffMerge'
       wincmd 'w'
       vim.normal 'o  "change"'
       vim.write
@@ -97,6 +110,7 @@ describe "Merge conflicts" do
     end
 
     specify "change and pick third buffer" do
+      vim.command 'LinediffMerge'
       wincmd 'w'
       wincmd 'w'
       vim.normal 'o  "change"'
@@ -108,6 +122,16 @@ describe "Merge conflicts" do
         def one
           "third"
           "change"
+        end
+      EOF
+    end
+
+    specify "pick first buffer directly" do
+      vim.command 'LinediffPick'
+
+      expect(buffer_contents).to eq <<~EOF
+        def one
+          "first"
         end
       EOF
     end

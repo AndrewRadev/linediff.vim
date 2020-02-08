@@ -133,7 +133,8 @@ the entire merge conflict. This also works with three-way diffs:
     end
 <
 The statuslines of the diff buffers will hold the label of the merge parent
-for convenience.
+for convenience. Also for convenience, executing |:LinediffPick| directly on
+the merge area will pick the area without going through the merge buffers first.
 
 ==============================================================================
 COMMANDS                                                   *linediff-commands*
@@ -194,10 +195,12 @@ the entire merge conflict area.
                                                                  *:LinediffPick*
 :LinediffPick
 
-Only valid after a |:LinediffMerge|, in a diff buffer. Picks the diff buffer
-you're in as the "correct" one to replace the entire merge conflict area in
-the parent buffer.
+After a |:LinediffMerge|, in a diff buffer -- picks the diff buffer you're in
+as the "correct" one to replace the entire merge conflict area in the parent
+buffer.
 
+Without a |:LinediffMerge| -- picks the area within a merge to replace the
+entire merge with.
 
 ==============================================================================
 SETTINGS                                                   *linediff-settings*

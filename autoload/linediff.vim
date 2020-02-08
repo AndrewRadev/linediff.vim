@@ -61,8 +61,8 @@ endfunction
 
 function! linediff#LinediffPick()
   if !exists('b:differ')
-    echomsg "Not in a Linediff diff buffer, nothing to do"
-    return 0
+    " not in a Linediff diff buffer, fall back to a local merge-pick
+    return s:LinediffLocalPick()
   endif
 
   if !b:differ.IsMergeDiff()
@@ -74,35 +74,68 @@ function! linediff#LinediffPick()
   call linediff#LinediffReset('!')
 endfunction
 
+function! s:LinediffLocalPick()
+  let merge_markers = s:FindMergeMarkers()
+  if len(merge_markers) < 3
+    return
+  endif
+
+  let range_start = merge_markers[0][0] - 1
+  let range_end = merge_markers[2][1] + 1
+  if range_end - range_start <= 2
+    return
+  endif
+
+  let target_lines = []
+
+  for area in merge_markers
+    let [start_line, end_line, _label] = area
+    if start_line <= line('.') && line('.') <= end_line
+      " then this is the picked area
+      let target_lines = getline(start_line, end_line)
+    endif
+  endfor
+
+  if len(target_lines) > 0
+    " then delete the area and replace it with the picked target
+    silent exe range_start..','..range_end.."delete _"
+    call append(range_start - 1, target_lines)
+  endif
+endfunction
+
 function! s:FindMergeMarkers()
   let view = winsaveview()
 
-  if search('^<<<<<<<', 'cbW') <= 0
-    return []
-  endif
-  let start_marker = line('.')
-  let start_label = matchstr(getline(start_marker), '^<<<<<<<\s*\zs.*')
-  call winrestview(view)
+  try
+    if search('^<<<<<<<', 'cbW') <= 0
+      return []
+    endif
+    let start_marker = line('.')
+    let start_label = matchstr(getline(start_marker), '^<<<<<<<\s*\zs.*')
+    call winrestview(view)
 
-  if search('^>>>>>>>', 'cW') <= 0
-    return []
-  endif
-  let end_marker = line('.')
-  let end_label = matchstr(getline(end_marker), '^>>>>>>>\s*\zs.*')
+    if search('^>>>>>>>', 'cW') <= 0
+      return []
+    endif
+    let end_marker = line('.')
+    let end_label = matchstr(getline(end_marker), '^>>>>>>>\s*\zs.*')
 
-  if search('^=======', 'cbW') <= 0
-    return []
-  endif
-  let other_marker = line('.')
+    if search('^=======', 'cbW') <= 0
+      return []
+    endif
+    let other_marker = line('.')
 
-  let base_marker = other_marker
-  if search('^|||||||', 'cbW') > 0
-    let base_marker = line('.')
-  endif
+    let base_marker = other_marker
+    if search('^|||||||', 'cbW') > 0
+      let base_marker = line('.')
+    endif
 
-  return [
-        \   [start_marker + 1, base_marker - 1, start_label],
-        \   [base_marker + 1, other_marker - 1, "common ancestor"],
-        \   [other_marker + 1, end_marker - 1, end_label],
-        \ ]
+    return [
+          \   [start_marker + 1, base_marker - 1, start_label],
+          \   [base_marker + 1, other_marker - 1, "common ancestor"],
+          \   [other_marker + 1, end_marker - 1, end_label],
+          \ ]
+  finally
+    call winrestview(view)
+  endtry
 endfunction
