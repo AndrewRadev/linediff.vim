@@ -98,7 +98,7 @@ function! s:LinediffLocalPick()
 
   if len(target_lines) > 0
     " then delete the area and replace it with the picked target
-    silent exe range_start..','..range_end.."delete _"
+    silent exe range_start . ',' . range_end . "delete _"
     call append(range_start - 1, target_lines)
   endif
 endfunction
