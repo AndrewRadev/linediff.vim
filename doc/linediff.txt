@@ -6,6 +6,7 @@ CONTENTS                                      *linediff* *linediff-contents*
     Installation...........................: |linediff-installation|
     Usage..................................: |linediff-usage|
     Commands...............................: |linediff-commands|
+    Mappings...............................: |linediff-mappings|
     Settings...............................: |linediff-settings|
     Internals..............................: |linediff-internals|
     Issues.................................: |linediff-issues|
@@ -201,6 +202,21 @@ buffer.
 
 Without a |:LinediffMerge| -- picks the area within a merge to replace the
 entire merge with.
+
+==============================================================================
+MAPPINGS                                                   *linediff-mappings*
+
+<Plug>(linediff-operator){motion}                    *<Plug>(linediff-operator)*
+
+Performs |:Linediff| to {motion} lines.
+
+<Plug>(linediff-add-operator){motion}            *<Plug>(linediff-add-operator)*
+
+Performs |:LinediffAdd| to {motion} lines.
+
+<Plug>(linediff-last-operator){motion}          *<Plug>(linediff-last-operator)*
+
+Performs |:LinediffLast| to {motion} lines.
 
 ==============================================================================
 SETTINGS                                                   *linediff-settings*
