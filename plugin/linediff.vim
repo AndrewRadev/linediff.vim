@@ -43,4 +43,23 @@ command! -bang  LinediffReset call linediff#LinediffReset(<q-bang>)
 command!        LinediffMerge call linediff#LinediffMerge()
 command!        LinediffPick  call linediff#LinediffPick()
 
+function! s:linediff_op(wise)
+  silent '[, '] Linediff
+endfunction
+
+function! s:linediff_add_op(wise)
+  silent '[, '] LinediffAdd
+endfunction
+
+function! s:linediff_last_op(wise)
+  silent '[, '] LinediffLast
+endfunction
+
+nnoremap <silent> <Plug>(linediff-operator)
+      \ :<C-u>set operatorfunc=<SID>linediff_op<CR>g@
+nnoremap <silent> <Plug>(linediff-add-operator)
+      \ :<C-u>set operatorfunc=<SID>linediff_add_op<CR>g@
+nnoremap <silent> <Plug>(linediff-last-operator)
+      \ :<C-u>set operatorfunc=<SID>linediff_last_op<CR>g@
+
 let &cpo = s:keepcpo
