@@ -211,7 +211,16 @@ endfunction
 function! linediff#differ#CloseDiffBuffer(force) dict
   if bufexists(self.diff_buffer)
     let bang = a:force ? '!' : ''
-    exe "bdelete".bang." ".self.diff_buffer
+    let diff_buffer = self.diff_buffer
+
+    if has('patch-9.0.907')
+      " Vim forbids closing the window inside an autocommand, so let's do it
+      " afterwards.
+      " Ref: https://github.com/AndrewRadev/linediff.vim/issues/36
+      call timer_start(1, {-> execute('bdelete'.bang.' '.diff_buffer) })
+    else
+      exe 'bdelete'.bang.' '.diff_buffer
+    endif
   endif
 endfunction
 
