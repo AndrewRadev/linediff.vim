@@ -248,12 +248,12 @@ function! linediff#differ#UpdateOriginalBuffer() dict
   " Switch to the original buffer, delete the relevant lines, add the new
   " ones, switch back to the diff buffer.
   set bufhidden=hide
-  call linediff#util#SwitchBuffer(self.original_buffer)
+  exe "buffer " . self.original_buffer
   call cursor(self.from, 1)
-  exe "silent! ".(self.to - self.from + 1)."foldopen!"
-  exe "normal! ".(self.to - self.from + 1)."dd"
+  exe "silent! " . (self.to - self.from + 1) . "foldopen!"
+  exe "normal! " . (self.to - self.from + 1) . '"_dd'
   call append(self.from - 1, new_lines)
-  call linediff#util#SwitchBuffer(self.diff_buffer)
+  exe "buffer " . self.diff_buffer
   set bufhidden=wipe
 
   " Keep the difference in lines to know how to update the other differ if
