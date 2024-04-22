@@ -217,9 +217,9 @@ function! linediff#differ#CloseDiffBuffer(force) dict
       " Vim forbids closing the window inside an autocommand, so let's do it
       " afterwards.
       " Ref: https://github.com/AndrewRadev/linediff.vim/issues/36
-      call timer_start(1, {-> execute('bdelete'.bang.' '.diff_buffer) })
+      call timer_start(1, {-> execute('bdelete'.bang.' '.diff_buffer, 'silent!') })
     else
-      exe 'bdelete'.bang.' '.diff_buffer
+      exe 'silent! bdelete'.bang.' '.diff_buffer
     endif
   endif
 endfunction
