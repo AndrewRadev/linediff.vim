@@ -1,5 +1,4 @@
 [![GitHub version](https://badge.fury.io/gh/andrewradev%2Flinediff.vim.svg)](https://badge.fury.io/gh/andrewradev%2Flinediff.vim)
-[![Build Status](https://secure.travis-ci.org/AndrewRadev/linediff.vim.png?branch=master)](http://travis-ci.org/AndrewRadev/linediff.vim)
 
 The linediff plugin provides a simple command, `:Linediff`, which is used to diff two separate blocks of text.
 
@@ -28,3 +27,7 @@ Executing a new `:Linediff` will do the same as `:LinediffReset`, but will also 
 For more commands and different workflows, you should read the full documentation with [`:help linediff`](https://github.com/AndrewRadev/linediff.vim/blob/master/doc/linediff.txt)
 
 **Note that you shouldn't linediff two pieces of text that overlap**. Not that anything horribly bad will happen, it just won't work as you'd hope to. I don't feel like it's a very important use case, but if someone requests sensible behaviour in that case, I should be able to get it working.
+
+## Contributing
+
+Pull requests are welcome, as long as they did not involve LLM usage. Be sure to abide by the [CODE_OF_CONDUCT.md](https://codeberg.org/AndrewRadev/python_tools.vim/blob/main/CODE_OF_CONDUCT.md) as well.
