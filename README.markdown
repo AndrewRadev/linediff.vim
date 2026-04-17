@@ -89,6 +89,78 @@ end
 
 The statuslines of the diff buffers will hold the label of the merge parent for convenience. Also for convenience, executing `:LinediffPick` directly on the merge area will pick the area without going through the merge buffers first.
 
+## Commands
+
+```vim
+:[range]Linediff
+```
+
+The main interface of the plugin. Needs to be executed on a range of lines,
+which will be marked with a sign. On the selection of the second such range,
+the command will open a tab with the two ranges in vertically split windows
+and perform a diff on them. Saving one of the two buffers will automatically
+update the original buffer the text was taken from.
+
+When executed for a third time, a new line diff is initiated, and the current
+process is reset, much like the effect of |LinediffReset| would be.
+
+```vim
+:LinediffReset[!]
+```
+
+Removes the signs denoting the diffed regions and deletes the temporary
+buffers, used for the diff. The original buffers are untouched by this, which
+means that any updates to them, performed by the diff process will remain.
+Specifying ! discards unsaved changes made in the temporary buffers.
+
+```vim
+:[range]LinediffAdd
+```
+
+Adds a buffer to be diffed later. This is an interface that allows diffing
+more than two areas. Should be followed by another "Add", or by "Show" or
+"Last" to finish the process of adding areas.
+
+```vim
+:LinediffShow
+```
+
+Shows the diff between all of the marked areas. This is useful if you've been
+adding areas with `:LinediffAdd` and you're ready to see their diff.
+
+```vim
+:[range]LinediffLast
+```
+
+Performs a combination of `:LinediffAdd` and `:LinediffShow`. Considers the
+marked area to be the last one added to the diff buffers and opens the diff.
+
+```vim
+:LinediffMerge
+```
+
+Looks for merge markers around the cursor, takes their contents and renders
+them in a diff. The diff buffers act like normal diff buffers, updating their
+parent buffer, but you can call `:LinediffPick` to pick one of them to replace
+the entire merge conflict area.
+
+```vim
+:LinediffPick
+```
+
+After a `:LinediffMerge`, in a diff buffer -- picks the diff buffer you're in
+as the "correct" one to replace the entire merge conflict area in the parent
+buffer.
+
+Without a `:LinediffMerge` -- picks the area within a merge to replace the
+entire merge with.
+
+## Mappings
+
+- `<Plug>(linediff-operator){motion}`:  Performs `:Linediff` to {motion} lines.
+- `<Plug>(linediff-add-operator){motion}`: Performs `:LinediffAdd` to {motion} lines.
+- `<Plug>(linediff-last-operator){motion}`:  Performs `:LinediffLast` to {motion} lines.
+
 ## Contributing
 
 Pull requests are welcome, as long as they did not involve LLM usage. Be sure to abide by the [CODE_OF_CONDUCT.md](https://codeberg.org/AndrewRadev/python_tools.vim/blob/main/CODE_OF_CONDUCT.md) as well.

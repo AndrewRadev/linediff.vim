@@ -1,7 +1,7 @@
 *linediff.txt*	Diff two blocks of text
 
 ==============================================================================
-CONTENTS                                      *linediff* *linediff-contents*
+CONTENTS                                            *linediff* *linediff-contents*
 
     Installation...........................: |linediff-installation|
     Usage..................................: |linediff-usage|
@@ -13,7 +13,7 @@ CONTENTS                                      *linediff* *linediff-contents*
 
 
 ==============================================================================
-INSTALLATION                                           *linediff-installation*
+INSTALLATION                                             *linediff-installation*
 
 There are several ways to install the plugin. The recommended one is by using
 Tim Pope's pathogen (http://www.vim.org/scripts/script.php?script_id=2332). In
@@ -32,7 +32,7 @@ Another way is to simply copy all the essential directories inside the ~/.vim
 directory: plugin, autoload, doc.
 
 ==============================================================================
-USAGE                                                         *linediff-usage*
+USAGE                                                           *linediff-usage*
 
 The plugin provides a simple command, |:Linediff|, which is used to diff two
 separate blocks of text.
@@ -136,7 +136,7 @@ for convenience. Also for convenience, executing |:LinediffPick| directly on
 the merge area will pick the area without going through the merge buffers first.
 
 ==============================================================================
-COMMANDS                                                   *linediff-commands*
+COMMANDS                                                     *linediff-commands*
 
                                                                      *:Linediff*
 :[range]Linediff
@@ -202,7 +202,7 @@ Without a |:LinediffMerge| -- picks the area within a merge to replace the
 entire merge with.
 
 ==============================================================================
-MAPPINGS                                                   *linediff-mappings*
+MAPPINGS                                                     *linediff-mappings*
 
 <Plug>(linediff-operator){motion}                    *<Plug>(linediff-operator)*
 
@@ -217,9 +217,9 @@ Performs |:LinediffAdd| to {motion} lines.
 Performs |:LinediffLast| to {motion} lines.
 
 ==============================================================================
-SETTINGS                                                   *linediff-settings*
+SETTINGS                                                     *linediff-settings*
 
-                                                           *g:linediff_indent*
+                                                            *g:linediff_indent*
 >
     let g:linediff_indent = 1
 <
@@ -230,7 +230,7 @@ If this flag is set to 1, linediff will reindent the diffed sections in order
 to minimize differences caused by formatting. This may change the buffers'
 contents.
 
-                                                      *g:linediff_buffer_type*
+                                                        *g:linediff_buffer_type*
 >
     let g:linediff_buffer_type = 'scratch'
 <
@@ -250,8 +250,8 @@ actual file (like executing |:make|). The drawback is that the only way to
 display information on the proxy is by hacking the statusline, which may cause
 issues and can't work reliably on all statuslines.
 
-                                            *g:linediff_first_buffer_command*
-                                            *g:linediff_further_buffer_command*
+                                             *g:linediff_first_buffer_command*
+                                             *g:linediff_further_buffer_command*
 >
     let g:linediff_first_buffer_command  = 'new'
     let g:linediff_further_buffer_command = 'vertical new'
@@ -276,7 +276,7 @@ You can control the positioning with judicious use of |:rightbelow| and
 |:leftabove|. If you omit these commands, the view will simply follow your
 default settings when opening new splits.
 
-                                                          *g:linediff_diffopt*
+                                                            *g:linediff_diffopt*
 >
     let g:linediff_diffopt = 'filler,iwhite'
 <
@@ -292,7 +292,7 @@ Note that the 'diffopt' setting is global, which means that it will simply be
 set globally and then reverted back to its previous setting once the linediff
 is stopped.
 
-                                                *g:linediff_modify_statusline*
+                                                  *g:linediff_modify_statusline*
 >
     let g:linediff_modify_statusline = 0
 <
@@ -303,7 +303,7 @@ the diffed areas in the statusline. It's on by default, but you can set it to
 0 to leave the statusline untouched. You can access the description that would
 have been put there with `b:differ.description`, within the buffer.
 
-                                                *g:linediff_sign_highlight_group*
+                                               *g:linediff_sign_highlight_group*
 >
     let g:linediff_sign_highlight_group = "DiffChange"
 <
@@ -314,7 +314,7 @@ displayed in the source buffer's "gutter".
 
 
 ==============================================================================
-INTERNALS                                                 *linediff-internals*
+INTERNALS                                                   *linediff-internals*
 
 When a block of text is diffed with the plugin, a "Differ" object is
 initialized with its relevant data. The differ contains information about the
@@ -373,7 +373,7 @@ are no more live differs. Hacky, but seems to work.
 
 
 ==============================================================================
-ISSUES                                                       *linediff-issues*
+ISSUES                                                         *linediff-issues*
 
 You shouldn't linediff two pieces of text that overlap. Not that anything
 horribly bad will happen, it just won't work as you'd hope to. I don't feel
