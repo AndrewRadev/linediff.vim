@@ -163,4 +163,4 @@ entire merge with.
 
 ## Contributing
 
-Pull requests are welcome, as long as they did not involve LLM usage. Be sure to abide by the [CODE_OF_CONDUCT.md](https://codeberg.org/AndrewRadev/python_tools.vim/blob/main/CODE_OF_CONDUCT.md) as well.
+Pull requests are welcome, as long as they **did not involve LLM usage**. Be sure to abide by the [CODE_OF_CONDUCT.md](https://codeberg.org/AndrewRadev/python_tools.vim/blob/main/CODE_OF_CONDUCT.md) as well.
